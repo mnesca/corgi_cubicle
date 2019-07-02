@@ -6,6 +6,9 @@ I'm a beginner data scientist, i am using this repository to practice and get ti
 For now im sticking with Canadian open data sources:
   https://data.winnipeg.ca/  -- i am currently going to be doing analysis on transit data.
 
+UPDATE 07-02-2019:
+  - Okay it seems to work!! super proud! 1 step closer to a data scientist! :)
+
 
 UPDATE 06-29-2019:
   - opened up my own repository
