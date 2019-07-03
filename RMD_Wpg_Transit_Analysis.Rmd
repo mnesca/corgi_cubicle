@@ -1,0 +1,33 @@
+---
+title: "Playing Around with Transit Data"
+author: "Marcello Nesca"
+date: "July 2 2019"
+output: github_document
+---
+
+## Motivation(s) & Objectives
+
+The idea of this practice dataset is:
+  1) to upkeep my data science skills in R 
+  2) playing with version control using Github
+  3) Store my thoughts on data analysis
+  4) i want to practice more on Tidyverse code and stop using BASE R coding
+
+
+```{r loading packages, include=TRUE}
+library(here) 
+## *Here package* is supposed to find the project path that you are working off of
+## A good reference is this github page <https://github.com/jennybc/here_here>
+library(rmarkdown)
+```
+
+## Problems and Issues
+1) how to save R Markdown files on github.
+
+```{r issues to solve, include = TRUE}
+## 1) need to install rmarkdown package then change the yaml output: github_document
+install.packages("rmarkdown")
+```
+
+
+
