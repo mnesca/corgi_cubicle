@@ -7,7 +7,7 @@ output: github_document
 
 ## Motivation(s) & Objectives
 
-The idea of this practice dataset is:
+The idea of this practice dataset is:  
   1) to upkeep my data science skills in R  
   2) playing with version control using Github  
   3) Store my thoughts on data analysis  
@@ -16,8 +16,7 @@ The idea of this practice dataset is:
 
 ```{r loading packages, include=TRUE}
 library(here) 
-library(rmarkdown)
-library(readr)
+library(tidyverse)
 ```
 
 ## Loading Datasets
