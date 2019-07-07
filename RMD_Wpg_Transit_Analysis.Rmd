@@ -8,18 +8,27 @@ output: github_document
 ## Motivation(s) & Objectives
 
 The idea of this practice dataset is:
-  1) to upkeep my data science skills in R 
-  2) playing with version control using Github
-  3) Store my thoughts on data analysis
-  4) i want to practice more on Tidyverse code and stop using BASE R coding
+  1) to upkeep my data science skills in R  
+  2) playing with version control using Github  
+  3) Store my thoughts on data analysis  
+  4) i want to practice more on Tidyverse code and stop using BASE R coding  
 
 
 ```{r loading packages, include=TRUE}
 library(here) 
 library(rmarkdown)
+library(readr)
 ```
 
+## Loading Datasets
 
+I have obtained this dataset from the City of Winnipeg open dataset archive I will be concentrating on utilizing the Transit-passups for this practice project.  Since this dataset gets updated daily, I have gotten this dataset in June 29th 2019.
+
+Ref: <https://data.winnipeg.ca/Transit/Transit-Pass-ups/mer2-irmb>
+
+```{r loading data, include=TRUE}
+transitdata <- read_csv(here("data", "Transit_Pass-ups.csv"))
+```
 
 
 
