@@ -16,18 +16,10 @@ The idea of this practice dataset is:
 
 ```{r loading packages, include=TRUE}
 library(here) 
-## *Here package* is supposed to find the project path that you are working off of
-## A good reference is this github page <https://github.com/jennybc/here_here>
 library(rmarkdown)
 ```
 
-## Problems and Issues
-1) how to save R Markdown files on github.
 
-```{r issues to solve, include = TRUE}
-## 1) need to install rmarkdown package then change the yaml output: github_document
-install.packages("rmarkdown")
-```
 
 
 
