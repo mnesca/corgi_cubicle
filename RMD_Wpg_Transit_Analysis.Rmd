@@ -29,5 +29,22 @@ Ref: <https://data.winnipeg.ca/Transit/Transit-Pass-ups/mer2-irmb>
 transitdata <- read_csv(here("data", "Transit_Pass-ups.csv"))
 ```
 
+## Descriptive Analysis on Variables
 
 
+
+Here I want to describe what my variables initially look like before further analysis. We first need to see what variables are included without continiously looking at the dataframe.  The idea is to try to be efficient in your work. 
+Here are a list of the variables: 
+```{r sumvar}
+sumvar <- summary(transitdata)
+print(sumvar)
+```
+
+```{r Descriptive Analysis, include=TRUE}
+g <- ggplot(transitdata, aes("Route Destination"))
+g + 
+  geom_bar() +
+  xlab("This is where the bus was going")
+```
+
+It seems this produced an error that I am trying to fix, the error in this case is that its outputting the total count of the variable under Route Destination which is not useful at all. I will try to fix this.
