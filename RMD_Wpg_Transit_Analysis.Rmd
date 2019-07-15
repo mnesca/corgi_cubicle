@@ -49,10 +49,17 @@ It seems this produced an error that I am trying to fix, the error in this case 
 
 The issue was that the variables were characters to which i have to change to factors.
 
-```{r Mutating character variables to Factors, include=TRUE}
+```{r Mutating character variables to Factors then checking in GGPLOT2, include=TRUE}
 transitdata <- transitdata %>% 
   mutate_at(vars("Route Destination", "Route Name", "Pass-Up Type"), as.factor)
+tibble(transitdata)
+g <- ggplot(transitdata, aes("Pass-Up Type"))
+g + 
+  geom_bar() +
+  xlab("Type of bus that passed")
 ```
+
+
 
 AAAAND... it still doesnt work!! urgggg!
 

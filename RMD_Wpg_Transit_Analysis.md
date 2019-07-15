@@ -84,6 +84,32 @@ change to factors.
 ``` r
 transitdata <- transitdata %>% 
   mutate_at(vars("Route Destination", "Route Name", "Pass-Up Type"), as.factor)
+tibble(transitdata)
 ```
+
+    ## # A tibble: 115,520 x 1
+    ##    transitdata$`Pa~ $`Pass-Up Type` $Time $`Route Number` $`Route Name`
+    ##               <dbl> <fct>           <chr>           <dbl> <fct>        
+    ##  1          2934796 Wheelchair Use~ 06/2~              16 Selkirk-Osbo~
+    ##  2          2934787 Full Bus Pass-~ 06/2~              15 Sargent-Moun~
+    ##  3          2934745 Full Bus Pass-~ 06/2~              14 St. Mary's-E~
+    ##  4          2934683 Full Bus Pass-~ 06/2~              21 Portage Expr~
+    ##  5          2934614 Full Bus Pass-~ 06/2~             162 Ft. Richmond~
+    ##  6          2934585 Full Bus Pass-~ 06/2~              21 Portage Expr~
+    ##  7          2934512 Full Bus Pass-~ 06/2~              21 Portage Expr~
+    ##  8          2934474 Wheelchair Use~ 06/2~              21 Portage Expr~
+    ##  9          2934449 Full Bus Pass-~ 06/2~              55 St.Anne's    
+    ## 10          2934412 Full Bus Pass-~ 06/2~              11 Portage-Kild~
+    ## # ... with 115,510 more rows, and 2 more variables: $`Route
+    ## #   Destination` <fct>, $Location <chr>
+
+``` r
+g <- ggplot(transitdata, aes("Pass-Up Type"))
+g + 
+  geom_bar() +
+  xlab("Type of bus that passed")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/Mutating%20character%20variables%20to%20Factors%20then%20checking%20in%20GGPLOT2-1.png)<!-- -->
 
 AAAAND… it still doesnt work\!\! urgggg\!
