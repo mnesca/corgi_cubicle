@@ -39,9 +39,9 @@ print(sumvar)
 ```
 
 ```{r Descriptive Analysis, include=TRUE}
-g <- ggplot(transitdata, aes("Pass-Up Type"))
+g <- ggplot(transitdata)
 g + 
-  geom_bar() +
+  geom_bar(aes("Pass-Up Type")) +
   xlab("Type of bus that passed")
 ```
 
@@ -53,13 +53,23 @@ The issue was that the variables were characters to which i have to change to fa
 transitdata <- transitdata %>% 
   mutate_at(vars("Route Destination", "Route Name", "Pass-Up Type"), as.factor)
 tibble(transitdata)
-g <- ggplot(transitdata, aes("Pass-Up Type"))
+g <- ggplot(transitdata)
 g + 
-  geom_bar() +
+  geom_bar(aes(`Pass-Up Type`)) +
   xlab("Type of bus that passed")
 ```
 
+AAAAND... urgggg! It seems like transforming the variables didnt work either!!
 
+UPDATE: 07-21-2019:
+So I finally figured out why my GGPLOT geom bar is continiously breaking -- it took me a week or so to figure this out.  It is because GGPLOT *CANNOT* have spaces in the variables.  Furthermore, spaces between variables is not good coding practice anyways, so... City of Winnipeg, do *NOT* put spaces in your variables.
 
-AAAAND... it still doesnt work!! urgggg!
+```{r Now lets see other variables!, include=TRUE}
+g + 
+  geom_bar(aes(`Route Destination`)) +
+  xlab("Where the bus went")
 
+g + 
+  geom_bar(aes(`Route Name`)) +
+  xlab("Name of the Route")
+```
