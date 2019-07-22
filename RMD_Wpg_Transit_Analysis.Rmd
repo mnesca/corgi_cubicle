@@ -55,7 +55,7 @@ transitdata <- transitdata %>%
 tibble(transitdata)
 g <- ggplot(transitdata)
 g + 
-  geom_bar(aes(`Pass-Up Type`)) +
+  geom_bar(aes(`Pass-Up Type`, fill = `Pass-Up Type`)) +
   xlab("Type of bus that passed")
 ```
 
@@ -73,3 +73,5 @@ g +
   geom_bar(aes(`Route Name`)) +
   xlab("Name of the Route")
 ```
+
+There are way too many values for these variables... Now a new problem to solve!
