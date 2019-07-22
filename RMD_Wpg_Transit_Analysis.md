@@ -66,9 +66,9 @@ print(sumvar)
     ## 
 
 ``` r
-g <- ggplot(transitdata, aes("Pass-Up Type"))
+g <- ggplot(transitdata)
 g + 
-  geom_bar() +
+  geom_bar(aes("Pass-Up Type")) +
   xlab("Type of bus that passed")
 ```
 
@@ -104,12 +104,40 @@ tibble(transitdata)
     ## #   Destination` <fct>, $Location <chr>
 
 ``` r
-g <- ggplot(transitdata, aes("Pass-Up Type"))
+g <- ggplot(transitdata)
 g + 
-  geom_bar() +
+  geom_bar(aes(`Pass-Up Type`, fill = `Pass-Up Type`)) +
   xlab("Type of bus that passed")
 ```
 
 ![](RMD_Wpg_Transit_Analysis_files/figure-gfm/Mutating%20character%20variables%20to%20Factors%20then%20checking%20in%20GGPLOT2-1.png)<!-- -->
 
-AAAAND… it still doesnt work\!\! urgggg\!
+AAAAND… urgggg\! It seems like transforming the variables didnt work
+either\!\!
+
+UPDATE: 07-21-2019: So I finally figured out why my GGPLOT geom bar is
+continiously breaking – it took me a week or so to figure this out. It
+is because GGPLOT *CANNOT* have spaces in the variables. Furthermore,
+spaces between variables is not good coding practice anyways, so… City
+of Winnipeg, do *NOT* put spaces in your variables.
+
+``` r
+g + 
+  geom_bar(aes(`Route Destination`)) +
+  coord_flip() +
+  xlab("Where the bus went")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/Now%20lets%20see%20other%20variables!-1.png)<!-- -->
+
+``` r
+g + 
+  geom_bar(aes(`Route Name`)) +
+  coord_flip() +
+  xlab("Name of the Route")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/Now%20lets%20see%20other%20variables!-2.png)<!-- -->
+
+There are way too many values for these variables… Now a new problem to
+solve\!

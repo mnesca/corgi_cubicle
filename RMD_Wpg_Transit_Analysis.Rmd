@@ -67,10 +67,12 @@ So I finally figured out why my GGPLOT geom bar is continiously breaking -- it t
 ```{r Now lets see other variables!, include=TRUE}
 g + 
   geom_bar(aes(`Route Destination`)) +
+  coord_flip() +
   xlab("Where the bus went")
 
 g + 
   geom_bar(aes(`Route Name`)) +
+  coord_flip() +
   xlab("Name of the Route")
 ```
 
