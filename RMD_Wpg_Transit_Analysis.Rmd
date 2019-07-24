@@ -77,3 +77,14 @@ g +
 ```
 
 There are way too many values for these variables... Now a new problem to solve!
+
+
+
+
+
+```{r Separating variables!, include=TRUE}
+transitdata %>%
+  separate(Location, into = c("Extra", "Lat1", "Long1"), sep = " ") %>%
+  separate(Lat1, into = c("Extra1", "Latitude"), sep = 1) %>%
+  separate(Long1, into = c("Longitude", "Extra2"), sep = -1)
+```

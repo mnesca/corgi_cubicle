@@ -141,3 +141,27 @@ g +
 
 There are way too many values for these variables… Now a new problem to
 solve\!
+
+``` r
+transitdata %>%
+  separate(Location, into = c("Extra", "Lat1", "Long1"), sep = " ") %>%
+  separate(Lat1, into = c("Extra1", "Latitude"), sep = 1) %>%
+  separate(Long1, into = c("Longitude", "Extra2"), sep = -1)
+```
+
+    ## # A tibble: 115,520 x 11
+    ##    `Pass-Up ID` `Pass-Up Type` Time  `Route Number` `Route Name`
+    ##           <dbl> <fct>          <chr>          <dbl> <fct>       
+    ##  1      2934796 Wheelchair Us~ 06/2~             16 Selkirk-Osb~
+    ##  2      2934787 Full Bus Pass~ 06/2~             15 Sargent-Mou~
+    ##  3      2934745 Full Bus Pass~ 06/2~             14 St. Mary's-~
+    ##  4      2934683 Full Bus Pass~ 06/2~             21 Portage Exp~
+    ##  5      2934614 Full Bus Pass~ 06/2~            162 Ft. Richmon~
+    ##  6      2934585 Full Bus Pass~ 06/2~             21 Portage Exp~
+    ##  7      2934512 Full Bus Pass~ 06/2~             21 Portage Exp~
+    ##  8      2934474 Wheelchair Us~ 06/2~             21 Portage Exp~
+    ##  9      2934449 Full Bus Pass~ 06/2~             55 St.Anne's   
+    ## 10      2934412 Full Bus Pass~ 06/2~             11 Portage-Kil~
+    ## # ... with 115,510 more rows, and 6 more variables: `Route
+    ## #   Destination` <fct>, Extra <chr>, Extra1 <chr>, Latitude <chr>,
+    ## #   Longitude <chr>, Extra2 <chr>
