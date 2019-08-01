@@ -18,6 +18,7 @@ The idea of this practice dataset is:
 library(here) 
 library(tidyverse)
 library(stringr)
+library(lubridate)
 ```
 
 ## Loading Datasets
@@ -30,7 +31,7 @@ Ref: <https://data.winnipeg.ca/Transit/Transit-Pass-ups/mer2-irmb>
 transitdata <- read_csv(here::here("data", "Transit_Pass-ups.csv"))
 ```
 
-## Descriptive Analysis on Variables
+## Data Cleaning and Checking Variables
 
 Here I want to describe what my variables initially look like before further analysis. We first need to see what variables are included without continiously looking at the dataframe.  The idea is to try to be efficient in your work. 
 Here are a list of the variables: 
@@ -102,3 +103,15 @@ transitdata <- transitdata %>%
   select(-Extra, -Extra1, -Extra2)
 tibble(transitdata)
 ```
+
+```{r Changing Dates, include=TRUE}
+transitdata <- transitdata %>%
+  mutate(year = year(Time), 
+         month = month(Time), 
+         day = day(Time),
+         hour = hour(Time),
+         minute = minute(Time),
+         second = second(Time)
+         )
+```
+
