@@ -104,7 +104,10 @@ transitdata <- transitdata %>%
 tibble(transitdata)
 ```
 
+
+
 ```{r Changing Dates, include=TRUE}
+## Error doesnt work
 transitdata <- transitdata %>%
   mutate(year = year(Time), 
          month = month(Time), 
