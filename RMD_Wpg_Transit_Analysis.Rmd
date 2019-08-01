@@ -17,6 +17,7 @@ The idea of this practice dataset is:
 ```{r loading packages, include=FALSE}
 library(here) 
 library(tidyverse)
+library(stringr)
 ```
 
 ## Loading Datasets
@@ -26,7 +27,7 @@ I have obtained this dataset from the City of Winnipeg open dataset archive I wi
 Ref: <https://data.winnipeg.ca/Transit/Transit-Pass-ups/mer2-irmb>
 
 ```{r loading data, include=TRUE}
-transitdata <- read_csv(here("data", "Transit_Pass-ups.csv"))
+transitdata <- read_csv(here::here("data", "Transit_Pass-ups.csv"))
 ```
 
 ## Descriptive Analysis on Variables
@@ -49,42 +50,55 @@ It seems this produced an error that I am trying to fix, the error in this case 
 
 The issue was that the variables were characters to which i have to change to factors.
 
-```{r Mutating character variables to Factors then checking in GGPLOT2, include=TRUE}
+AAAAND... urgggg! It seems like transforming the variables didnt work either!!
+
+
+```{r Mutating character variables to Factors and renaming, include=TRUE}
 transitdata <- transitdata %>% 
   mutate_at(vars("Route Destination", "Route Name", "Pass-Up Type"), as.factor)
-tibble(transitdata)
-g <- ggplot(transitdata)
-g + 
-  geom_bar(aes(`Pass-Up Type`, fill = `Pass-Up Type`)) +
-  xlab("Type of bus that passed")
-```
 
-AAAAND... urgggg! It seems like transforming the variables didnt work either!!
+## I know this next bit of code is inefficient so i have to trouble shoot it later.
+transitdata <- transitdata %>% 
+  dplyr::rename(RouteDestination = `Route Destination`) %>%
+  dplyr::rename(RouteName = `Route Name`) %>%
+  dplyr::rename(PassUpType = `Pass-Up Type`) %>%
+  dplyr::rename(RouteNumber = `Route Number`) %>%
+  dplyr::rename(PassUpID = `Pass-Up ID`)
+tibble(transitdata)
+```
 
 UPDATE: 07-21-2019:
 So I finally figured out why my GGPLOT geom bar is continiously breaking -- it took me a week or so to figure this out.  It is because GGPLOT *CANNOT* have spaces in the variables.  Furthermore, spaces between variables is not good coding practice anyways, so... City of Winnipeg, do *NOT* put spaces in your variables.
 
+```{r GGPLOT Test, include=TRUE}
+g <- ggplot(transitdata)
+g + 
+  geom_bar(aes(PassUpType, fill = PassUpType)) +
+  xlab("Type of bus that passed")
+```
+
 ```{r Now lets see other variables!, include=TRUE}
 g + 
-  geom_bar(aes(`Route Destination`)) +
+  geom_bar(aes(RouteDestination)) +
   coord_flip() +
   xlab("Where the bus went")
 
 g + 
-  geom_bar(aes(`Route Name`)) +
+  geom_bar(aes(RouteName)) +
   coord_flip() +
   xlab("Name of the Route")
 ```
 
 There are way too many values for these variables... Now a new problem to solve!
 
-
-
-
+UPDATE 07-31-2019:
+definitely by practice, cleaning and visualizing data is a circular process. 
 
 ```{r Separating variables!, include=TRUE}
-transitdata %>%
+transitdata <- transitdata %>%
   separate(Location, into = c("Extra", "Lat1", "Long1"), sep = " ") %>%
   separate(Lat1, into = c("Extra1", "Latitude"), sep = 1) %>%
-  separate(Long1, into = c("Longitude", "Extra2"), sep = -1)
+  separate(Long1, into = c("Longitude", "Extra2"), sep = -1) %>%
+  select(-Extra, -Extra1, -Extra2)
+tibble(transitdata)
 ```
