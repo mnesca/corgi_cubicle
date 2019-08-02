@@ -41,8 +41,7 @@ print(sumvar)
 ```
 
 ```{r Descriptive Analysis, include=TRUE}
-g <- ggplot(transitdata)
-g + 
+ggplot(transitdata) +
   geom_bar(aes("Pass-Up Type")) +
   xlab("Type of bus that passed")
 ```
@@ -55,36 +54,32 @@ AAAAND... urgggg! It seems like transforming the variables didnt work either!!
 
 
 ```{r Mutating character variables to Factors and renaming, include=TRUE}
-transitdata <- transitdata %>% 
-  mutate_at(vars("Route Destination", "Route Name", "Pass-Up Type"), as.factor)
-
 ## I know this next bit of code is inefficient so i have to trouble shoot it later.
 transitdata <- transitdata %>% 
   dplyr::rename(RouteDestination = `Route Destination`) %>%
   dplyr::rename(RouteName = `Route Name`) %>%
   dplyr::rename(PassUpType = `Pass-Up Type`) %>%
   dplyr::rename(RouteNumber = `Route Number`) %>%
-  dplyr::rename(PassUpID = `Pass-Up ID`)
-tibble(transitdata)
+  dplyr::rename(PassUpID = `Pass-Up ID`) %>%
+  mutate_at(vars("RouteDestination", "RouteName", "PassUpType", "RouteNumber"), as.factor)
 ```
 
 UPDATE: 07-21-2019:
 So I finally figured out why my GGPLOT geom bar is continiously breaking -- it took me a week or so to figure this out.  It is because GGPLOT *CANNOT* have spaces in the variables.  Furthermore, spaces between variables is not good coding practice anyways, so... City of Winnipeg, do *NOT* put spaces in your variables.
 
 ```{r GGPLOT Test, include=TRUE}
-g <- ggplot(transitdata)
-g + 
+ggplot(transitdata) +
   geom_bar(aes(PassUpType, fill = PassUpType)) +
   xlab("Type of bus that passed")
 ```
 
 ```{r Now lets see other variables!, include=TRUE}
-g + 
+ggplot(transitdata) +
   geom_bar(aes(RouteDestination)) +
   coord_flip() +
   xlab("Where the bus went")
 
-g + 
+ggplot(transitdata) +
   geom_bar(aes(RouteName)) +
   coord_flip() +
   xlab("Name of the Route")
@@ -101,20 +96,37 @@ transitdata <- transitdata %>%
   separate(Lat1, into = c("Extra1", "Latitude"), sep = 1) %>%
   separate(Long1, into = c("Longitude", "Extra2"), sep = -1) %>%
   select(-Extra, -Extra1, -Extra2)
-tibble(transitdata)
 ```
 
-
+```{r Mutating Time, include=TRUE}
+transitdata <- transitdata %>%
+  mutate(Time = mdy_hms(Time))
+```
 
 ```{r Changing Dates, include=TRUE}
-## Error doesnt work
 transitdata <- transitdata %>%
   mutate(year = year(Time), 
          month = month(Time), 
          day = day(Time),
-         hour = hour(Time),
-         minute = minute(Time),
-         second = second(Time)
          )
 ```
 
+```{r Changing Times, include=TRUE}
+transitdata <- transitdata %>%
+  mutate(hour = hour(Time), 
+         minute = minute(Time), 
+         second = second(Time),
+         )
+```
+
+
+```{r cleaning up time variables, include=TRUE}
+transitdata <- transitdata %>%
+  mutate(timeofday = make_datetime(hour, minute, second)) %>%
+  select(-hour, -minute, -second, -Time)
+```
+
+```{r changing format of time, include=TRUE}
+transitdata <- transitdata %>%
+  mutate(timeofday = lubridate::hms(timeofday))
+```

@@ -36,7 +36,7 @@ transitdata <- read_csv(here::here("data", "Transit_Pass-ups.csv"))
     ##   Location = col_character()
     ## )
 
-## Descriptive Analysis on Variables
+## Data Cleaning and Checking Variables
 
 Here I want to describe what my variables initially look like before
 further analysis. We first need to see what variables are included
@@ -66,8 +66,7 @@ print(sumvar)
     ## 
 
 ``` r
-g <- ggplot(transitdata)
-g + 
+ggplot(transitdata) +
   geom_bar(aes("Pass-Up Type")) +
   xlab("Type of bus that passed")
 ```
@@ -85,34 +84,15 @@ AAAAND… urgggg\! It seems like transforming the variables didnt work
 either\!\!
 
 ``` r
-transitdata <- transitdata %>% 
-  mutate_at(vars("Route Destination", "Route Name", "Pass-Up Type"), as.factor)
-
 ## I know this next bit of code is inefficient so i have to trouble shoot it later.
 transitdata <- transitdata %>% 
   dplyr::rename(RouteDestination = `Route Destination`) %>%
   dplyr::rename(RouteName = `Route Name`) %>%
   dplyr::rename(PassUpType = `Pass-Up Type`) %>%
   dplyr::rename(RouteNumber = `Route Number`) %>%
-  dplyr::rename(PassUpID = `Pass-Up ID`)
-tibble(transitdata)
+  dplyr::rename(PassUpID = `Pass-Up ID`) %>%
+  mutate_at(vars("RouteDestination", "RouteName", "PassUpType", "RouteNumber"), as.factor)
 ```
-
-    ## # A tibble: 115,520 x 1
-    ##    transitdata$Pas~ $PassUpType $Time $RouteNumber $RouteName
-    ##               <dbl> <fct>       <chr>        <dbl> <fct>     
-    ##  1          2934796 Wheelchair~ 06/2~           16 Selkirk-O~
-    ##  2          2934787 Full Bus P~ 06/2~           15 Sargent-M~
-    ##  3          2934745 Full Bus P~ 06/2~           14 St. Mary'~
-    ##  4          2934683 Full Bus P~ 06/2~           21 Portage E~
-    ##  5          2934614 Full Bus P~ 06/2~          162 Ft. Richm~
-    ##  6          2934585 Full Bus P~ 06/2~           21 Portage E~
-    ##  7          2934512 Full Bus P~ 06/2~           21 Portage E~
-    ##  8          2934474 Wheelchair~ 06/2~           21 Portage E~
-    ##  9          2934449 Full Bus P~ 06/2~           55 St.Anne's 
-    ## 10          2934412 Full Bus P~ 06/2~           11 Portage-K~
-    ## # ... with 115,510 more rows, and 2 more variables:
-    ## #   $RouteDestination <fct>, $Location <chr>
 
 UPDATE: 07-21-2019: So I finally figured out why my GGPLOT geom bar is
 continiously breaking – it took me a week or so to figure this out. It
@@ -121,8 +101,7 @@ spaces between variables is not good coding practice anyways, so… City
 of Winnipeg, do *NOT* put spaces in your variables.
 
 ``` r
-g <- ggplot(transitdata)
-g + 
+ggplot(transitdata) +
   geom_bar(aes(PassUpType, fill = PassUpType)) +
   xlab("Type of bus that passed")
 ```
@@ -130,7 +109,7 @@ g +
 ![](RMD_Wpg_Transit_Analysis_files/figure-gfm/GGPLOT%20Test-1.png)<!-- -->
 
 ``` r
-g + 
+ggplot(transitdata) +
   geom_bar(aes(RouteDestination)) +
   coord_flip() +
   xlab("Where the bus went")
@@ -139,7 +118,7 @@ g +
 ![](RMD_Wpg_Transit_Analysis_files/figure-gfm/Now%20lets%20see%20other%20variables!-1.png)<!-- -->
 
 ``` r
-g + 
+ggplot(transitdata) +
   geom_bar(aes(RouteName)) +
   coord_flip() +
   xlab("Name of the Route")
@@ -159,21 +138,36 @@ transitdata <- transitdata %>%
   separate(Lat1, into = c("Extra1", "Latitude"), sep = 1) %>%
   separate(Long1, into = c("Longitude", "Extra2"), sep = -1) %>%
   select(-Extra, -Extra1, -Extra2)
-tibble(transitdata)
 ```
 
-    ## # A tibble: 115,520 x 1
-    ##    transitdata$Pas~ $PassUpType $Time $RouteNumber $RouteName
-    ##               <dbl> <fct>       <chr>        <dbl> <fct>     
-    ##  1          2934796 Wheelchair~ 06/2~           16 Selkirk-O~
-    ##  2          2934787 Full Bus P~ 06/2~           15 Sargent-M~
-    ##  3          2934745 Full Bus P~ 06/2~           14 St. Mary'~
-    ##  4          2934683 Full Bus P~ 06/2~           21 Portage E~
-    ##  5          2934614 Full Bus P~ 06/2~          162 Ft. Richm~
-    ##  6          2934585 Full Bus P~ 06/2~           21 Portage E~
-    ##  7          2934512 Full Bus P~ 06/2~           21 Portage E~
-    ##  8          2934474 Wheelchair~ 06/2~           21 Portage E~
-    ##  9          2934449 Full Bus P~ 06/2~           55 St.Anne's 
-    ## 10          2934412 Full Bus P~ 06/2~           11 Portage-K~
-    ## # ... with 115,510 more rows, and 3 more variables:
-    ## #   $RouteDestination <fct>, $Latitude <chr>, $Longitude <chr>
+``` r
+transitdata <- transitdata %>%
+  mutate(Time = mdy_hms(Time))
+```
+
+``` r
+transitdata <- transitdata %>%
+  mutate(year = year(Time), 
+         month = month(Time), 
+         day = day(Time),
+         )
+```
+
+``` r
+transitdata <- transitdata %>%
+  mutate(hour = hour(Time), 
+         minute = minute(Time), 
+         second = second(Time),
+         )
+```
+
+``` r
+transitdata <- transitdata %>%
+  mutate(timeofday = make_datetime(hour, minute, second)) %>%
+  select(-hour, -minute, -second, -Time)
+```
+
+``` r
+transitdata <- transitdata %>%
+  mutate(timeofday = lubridate::hms(timeofday))
+```
