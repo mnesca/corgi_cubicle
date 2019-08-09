@@ -7,6 +7,9 @@ I'm a beginner data scientist, i am using this repository to practice and get ti
 For now im sticking with Canadian open data sources:
   https://data.winnipeg.ca/  -- i am currently going to be doing analysis on transit data.
 
+UPDATE 08-09-2019: 
+  - Quick update, I unfortunately have not been coding recently, and miss it terribly (I love the practice with R)! Recently however, I have been immersed in a bunch of Data Science books that I bought, especially text mining and overall data science processes, knowledge, and statistics. Thanks to my internship I was able to buy a total of 10-12 books! So far ive read 1 completely (Text mining with R by Julia Silge), and im working on 2 other books (R for Data Sciences, and Practical Text Mining with R). So please know that while I have not been coding I have been actively checking my Github along with studying more data sciences!
+
 UPDATE 07-27-2019: 
   - Late night update, so my harddrive on my laptop fried, and i ended up replacing it by buying a new m.2 drive from the nice folk over at Memory express, now in the middle of installing things.  I decided to move everything to Canadian Cloud Storage https://www.sync.com/ -- here is my referral link (http://www.sync.com/get-started?_sync_refer=a1b318d50), it is not necessary, but if you use it, it will grant both you and me an extra GB of space. With that being said I am much more careful these days of where to store my data, im very glad a Canadian Cloud Storage option is available, i am eventually going to move out of Google Cloud and Microsoft One Drive.   
 
