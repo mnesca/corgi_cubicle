@@ -108,6 +108,64 @@ ggplot(transitdata) +
 
 ![](RMD_Wpg_Transit_Analysis_files/figure-gfm/GGPLOT%20Test-1.png)<!-- -->
 
+UPDATE 07-31-2019: definitely by practice, cleaning and visualizing data
+is a circular process.
+
+Below is where i changed longitude and latitude
+
+``` r
+transitdata <- transitdata %>%
+  separate(Location, into = c("Extra", "Lat1", "Long1"), sep = " ") %>%
+  separate(Lat1, into = c("Extra1", "Latitude"), sep = 1) %>%
+  separate(Long1, into = c("Longitude", "Extra2"), sep = -1) %>%
+  select(-Extra, -Extra1, -Extra2)
+```
+
+Here is where we clean the time variable - i want to lubridate the time
+variable first, then split up time and date
+
+``` r
+transitdata <- transitdata %>%
+  mutate(Time = mdy_hms(Time)) %>%
+  separate(Time, into = c("Date", "Clock"), sep = " ")
+```
+
+``` r
+transitdata <- transitdata %>%
+  mutate(year = year(Date), 
+         month = month(Date), 
+         day = day(Date),
+         ) %>%
+  mutate_at(vars("year", "month"), as.factor)
+```
+
+It seems that I have cleaned everything I wish to clean, I have
+separated all the variables in their component parts including the
+dates\! So now lets explore some data finally\!
+
+``` r
+ggplot(transitdata) +
+  geom_bar(aes(year, fill = year)) +
+  xlab("Year")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/GGPLOT%20Data%20Exploration%20-%20year-1.png)<!-- -->
+
+Wow\! Interesting exploratory information\! The rate of pass-ups are
+increasing per year since 2015\! however in 2015 it did go down from
+2014. 2019 is a half year since i downloaded the data end of June 2019.
+
+``` r
+ggplot(transitdata) +
+  geom_bar(aes(month, fill = month)) +
+  xlab("Month")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/GGPLOT%20Data%20Exploration%20-%20month-1.png)<!-- -->
+
+and this is clearly very interesting\! most of the passups occur when –
+you guessed it\! school is starting\!
+
 ``` r
 ggplot(transitdata) +
   geom_bar(aes(RouteDestination)) +
@@ -126,48 +184,6 @@ ggplot(transitdata) +
 
 ![](RMD_Wpg_Transit_Analysis_files/figure-gfm/Now%20lets%20see%20other%20variables!-2.png)<!-- -->
 
-There are way too many values for these variables… Now a new problem to
-solve\!
-
-UPDATE 07-31-2019: definitely by practice, cleaning and visualizing data
-is a circular process.
-
-``` r
-transitdata <- transitdata %>%
-  separate(Location, into = c("Extra", "Lat1", "Long1"), sep = " ") %>%
-  separate(Lat1, into = c("Extra1", "Latitude"), sep = 1) %>%
-  separate(Long1, into = c("Longitude", "Extra2"), sep = -1) %>%
-  select(-Extra, -Extra1, -Extra2)
-```
-
-``` r
-transitdata <- transitdata %>%
-  mutate(Time = mdy_hms(Time))
-```
-
-``` r
-transitdata <- transitdata %>%
-  mutate(year = year(Time), 
-         month = month(Time), 
-         day = day(Time),
-         )
-```
-
-``` r
-transitdata <- transitdata %>%
-  mutate(hour = hour(Time), 
-         minute = minute(Time), 
-         second = second(Time),
-         )
-```
-
-``` r
-transitdata <- transitdata %>%
-  mutate(timeofday = make_datetime(hour, minute, second)) %>%
-  select(-hour, -minute, -second, -Time)
-```
-
-``` r
-transitdata <- transitdata %>%
-  mutate(timeofday = lubridate::hms(timeofday))
-```
+I cannot seem to find a way to properly sort categorical variables but
+ill definitely find out by next time\! There are way too many values for
+these variables… Now a new problem to solve\!
