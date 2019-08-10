@@ -100,7 +100,8 @@ transitdata <- transitdata %>%
          month = month(Date), 
          day = day(Date),
          ) %>%
-  mutate_at(vars("year", "month"), as.factor)
+  mutate_at(vars("year", "month"), as.factor) 
+# i had made a business decision to create date as a numerical variable instead of a categorical variable -- because i want to analyze the average date within a month.
 ```
 
 It seems that I have cleaned everything I wish to clean, I have separated all the variables in their component parts including the dates! So now lets explore some data finally!
@@ -112,6 +113,10 @@ ggplot(transitdata) +
 ```
 
 Wow! Interesting exploratory information! The rate of pass-ups are increasing per year since 2015! however in 2015 it did go down from 2014. 2019 is a half year since i downloaded the data end of June 2019.
+
+questions derived from this analysis (either answerable or unanswerable via data):  
+1) what caused the increase in pass ups from 2014-2018?  
+2) is it possible to join another table for extra insights, if so, what would be the common id?
 
 ```{r GGPLOT Data Exploration - month, include=TRUE}
 ggplot(transitdata) +
@@ -134,4 +139,11 @@ ggplot(transitdata) +
 ```
 
 I cannot seem to find a way to properly sort categorical variables but ill definitely find out by next time! There are way too many values for these variables... Now a new problem to solve!
+
+UPDATE 08-10-2019:  
+some possible solutions while talking to Ran!  
+1) derive only the top 10 and bottom 10 passups so filter by most frequent and least frequent  
+2) create a category for day of the week "Monday tuesday etc"  
+3) create a category for subgroup by region in winnipeg  
+4) create a category for what type of speed bus "super express, rapid transit, etc"
 
