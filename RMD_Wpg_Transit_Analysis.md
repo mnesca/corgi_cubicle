@@ -203,3 +203,102 @@ frequent and least frequent
 3\) create a category for subgroup by region in winnipeg  
 4\) create a category for what type of speed bus “super express, rapid
 transit, etc”
+
+``` r
+transitdata <- transitdata %>%
+  mutate(bus_speed = ifelse(RouteNumber %in% c(137,160,161,162,163,170,180,181,183,185), 'RapidTransit',
+                            ifelse(RouteNumber %in% c(101,102,109,110), 'Dart',
+                                   ifelse(RouteNumber %in% c(1,2,3), 'DowntownSpirit',
+                                          ifelse(RouteNumber %in% c(21,22,24,28,30,31,32,40,41,42,46,48,54,57,58,59,64,65,67), 'Express',
+                                                 ifelse(RouteNumber %in% c(25,34,35,36), 'SuperExpress', 'Regular'))))))
+```
+
+number 4 check\! Now lets visualize\!
+
+``` r
+ggplot(transitdata) +
+  geom_bar(aes(bus_speed, fill = bus_speed)) +
+  facet_wrap(~ year, nrow = 4) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  xlab("Type of bus speed") +
+  ylab("count of passups")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-1.png)<!-- -->
+
+``` r
+# two categorical variables - dotmap by year
+ggplot(transitdata) +
+  geom_count(aes(year, bus_speed))
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-2.png)<!-- -->
+
+``` r
+# two categorical variables - heatmap by month
+transitdata %>% 
+  count(month, bus_speed) %>%  
+  ggplot(aes(month, bus_speed)) +
+    geom_tile(aes(fill = n))
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-3.png)<!-- -->
+
+``` r
+#Finding out which busses are the culprits! 
+transitdata %>%
+  filter(bus_speed %in% c('Regular')) %>%
+  ggplot(aes(RouteNumber)) +
+    geom_bar() +
+    xlab("RouteNumber")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-4.png)<!-- -->
+
+``` r
+transitdata %>%
+  filter(bus_speed %in% c('RapidTransit')) %>%
+  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+    geom_bar() +
+    facet_wrap(~ month, nrow = 4) +
+    theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+    xlab("RouteNumber")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-5.png)<!-- -->
+
+``` r
+transitdata %>%
+  filter(bus_speed %in% c('Express')) %>%
+  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+    geom_bar() +
+    xlab("RouteNumber")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-6.png)<!-- -->
+
+``` r
+transitdata %>%
+  filter(bus_speed %in% c('SuperExpress')) %>%
+  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+    geom_bar() +
+    xlab("RouteNumber")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-7.png)<!-- -->
+
+``` r
+transitdata %>%
+  group_by(RouteNumber) %>%
+  filter(n() >= 4000) %>%
+  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+    geom_bar() +
+    xlab("RouteNumber")
+```
+
+    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
+    ## `forcats::fct_explicit_na`
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-8.png)<!-- -->
