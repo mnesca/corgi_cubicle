@@ -196,9 +196,8 @@ ill definitely find out by next time\! There are way too many values for
 these variables… Now a new problem to solve\!
 
 UPDATE 08-10-2019:  
-some possible solutions while talking to Ran\!  
-1\) derive only the top 10 and bottom 10 passups so filter by most
-frequent and least frequent  
+some possible solutions: 1) derive only the top 10 and bottom 10 passups
+so filter by most frequent and least frequent  
 2\) create a category for day of the week “Monday tuesday etc”  
 3\) create a category for subgroup by region in winnipeg  
 4\) create a category for what type of speed bus “super express, rapid
@@ -214,6 +213,32 @@ transitdata <- transitdata %>%
 ```
 
 number 4 check\! Now lets visualize\!
+
+``` r
+transitdata <- transitdata %>%
+  mutate(dayofweek = wday(Date, label = TRUE, abbr = FALSE))
+```
+
+number 2 check\!
+
+``` r
+## still trying to get the top 20 counts sorted by decending order
+# %>%
+#  arrange(desc(RouteDestination)) %>%
+#  slice(20:5000) %>%
+#ggplot(aes(x = RouteDestination, y = (..count..))) +
+#  geom_bar(stat = 'identity') +
+#  coord_flip() +
+#  xlab("Where the bus went")
+
+#transitdata %>%
+#  arrange(desc(RouteName)) %>%
+#  slice(20:5000) %>%
+#    ggplot(aes(x = RouteDestination, y = (..count..))) +
+#    geom_bar(stat='identity') +
+#    coord_flip() +
+#  xlab("Name of the Route")
+```
 
 ``` r
 ggplot(transitdata) +
@@ -302,3 +327,15 @@ transitdata %>%
     ## `forcats::fct_explicit_na`
 
 ![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-8.png)<!-- -->
+
+``` r
+transitdata %>%
+  ggplot(aes(dayofweek, fill = dayofweek)) +
+  geom_bar() +
+  facet_wrap(~ month, nrow = 4) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  xlab("Day of the Week")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-9.png)<!-- -->
