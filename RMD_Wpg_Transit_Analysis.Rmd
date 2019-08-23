@@ -14,11 +14,12 @@ The idea of this practice dataset is:
   4) i want to practice more on Tidyverse code and stop using BASE R coding  
 
 
-```{r loading packages, include=FALSE}
+```{r loading packages, include=FALSE, cache=FALSE}
 library(here) 
 library(tidyverse)
 library(stringr)
 library(lubridate)
+knitr::opts_chunk$set(fig.width = 12, fig.height = 8)
 ```
 
 ## Loading Datasets
@@ -193,7 +194,7 @@ number 2 check!
 
 ```{r checking new variable i created, include=TRUE}
 ggplot(transitdata) +
-  geom_bar(aes(bus_speed, fill = bus_speed)) +
+  geom_bar(aes(fct_infreq(bus_speed), fill = bus_speed)) +
   facet_wrap(~ year, nrow = 4) +
   theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
@@ -212,10 +213,17 @@ transitdata %>%
 
 #Finding out which busses are the culprits! 
 transitdata %>%
-  filter(bus_speed %in% c('Regular')) %>%
-  ggplot(aes(RouteNumber)) +
-    geom_bar() +
+  filter(bus_speed == 'Regular') %>%
+  ggplot(aes(fct_infreq(RouteNumber))) +
+    geom_bar(na.rm = TRUE) +
     xlab("RouteNumber")
+
+#Finding out which busses are the culprits! 
+transitdata %>%
+  filter(year == '2018') %>%
+  ggplot(aes(month)) +
+    geom_bar() +
+    xlab("Month for current year")
 
 transitdata %>%
   filter(bus_speed %in% c('RapidTransit')) %>%
@@ -227,21 +235,20 @@ transitdata %>%
     xlab("RouteNumber")
 
 transitdata %>%
-  filter(bus_speed %in% c('Express')) %>%
-  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+  filter(bus_speed == 'Express') %>%
+  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +  ## learned something new! 08-22-2019: forcats package is for all categorical variables... in this case i learned how to sort categorical variables by descending frequency.
     geom_bar() +
     xlab("RouteNumber")
 
 transitdata %>%
   filter(bus_speed %in% c('SuperExpress')) %>%
   ggplot(aes(RouteNumber, fill = RouteNumber)) +
-    geom_bar() +
+    geom_bar(na.rm = TRUE) +
     xlab("RouteNumber")
 
 transitdata %>%
-  group_by(RouteNumber) %>%
   filter(n() >= 4000) %>%
-  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +
     geom_bar() +
     xlab("RouteNumber")
 

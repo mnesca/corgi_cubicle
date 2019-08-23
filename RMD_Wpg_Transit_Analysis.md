@@ -49,15 +49,15 @@ print(sumvar)
 ```
 
     ##    Pass-Up ID      Pass-Up Type           Time            Route Number   
-    ##  Min.   : 363450   Length:115520      Length:115520      Min.   :  1.00  
-    ##  1st Qu.:1235098   Class :character   Class :character   1st Qu.: 18.00  
-    ##  Median :1864948   Mode  :character   Mode  :character   Median : 36.00  
-    ##  Mean   :1794693                                         Mean   : 59.61  
-    ##  3rd Qu.:2479886                                         3rd Qu.: 75.00  
-    ##  Max.   :2934796                                         Max.   :185.00  
+    ##  Min.   : 363450   Length:116321      Length:116321      Min.   :  1.00  
+    ##  1st Qu.:1238820   Class :character   Class :character   1st Qu.: 18.00  
+    ##  Median :1871030   Mode  :character   Mode  :character   Median : 36.00  
+    ##  Mean   :1802710                                         Mean   : 59.64  
+    ##  3rd Qu.:2488608                                         3rd Qu.: 75.00  
+    ##  Max.   :2981877                                         Max.   :185.00  
     ##                                                          NA's   :49      
     ##   Route Name        Route Destination    Location        
-    ##  Length:115520      Length:115520      Length:115520     
+    ##  Length:116321      Length:116321      Length:116321     
     ##  Class :character   Class :character   Class :character  
     ##  Mode  :character   Mode  :character   Mode  :character  
     ##                                                          
@@ -242,7 +242,7 @@ number 2 check\!
 
 ``` r
 ggplot(transitdata) +
-  geom_bar(aes(bus_speed, fill = bus_speed)) +
+  geom_bar(aes(fct_infreq(bus_speed), fill = bus_speed)) +
   facet_wrap(~ year, nrow = 4) +
   theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
@@ -273,13 +273,24 @@ transitdata %>%
 ``` r
 #Finding out which busses are the culprits! 
 transitdata %>%
-  filter(bus_speed %in% c('Regular')) %>%
-  ggplot(aes(RouteNumber)) +
-    geom_bar() +
+  filter(bus_speed == 'Regular') %>%
+  ggplot(aes(fct_infreq(RouteNumber))) +
+    geom_bar(na.rm = TRUE) +
     xlab("RouteNumber")
 ```
 
 ![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-4.png)<!-- -->
+
+``` r
+#Finding out which busses are the culprits! 
+transitdata %>%
+  filter(year == '2018') %>%
+  ggplot(aes(month)) +
+    geom_bar() +
+    xlab("Month for current year")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-5.png)<!-- -->
 
 ``` r
 transitdata %>%
@@ -292,22 +303,12 @@ transitdata %>%
     xlab("RouteNumber")
 ```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-5.png)<!-- -->
-
-``` r
-transitdata %>%
-  filter(bus_speed %in% c('Express')) %>%
-  ggplot(aes(RouteNumber, fill = RouteNumber)) +
-    geom_bar() +
-    xlab("RouteNumber")
-```
-
 ![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-6.png)<!-- -->
 
 ``` r
 transitdata %>%
-  filter(bus_speed %in% c('SuperExpress')) %>%
-  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+  filter(bus_speed == 'Express') %>%
+  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +  ## learned something new! 08-22-2019: forcats package is for all categorical variables... in this case i learned how to sort categorical variables by descending frequency.
     geom_bar() +
     xlab("RouteNumber")
 ```
@@ -316,17 +317,23 @@ transitdata %>%
 
 ``` r
 transitdata %>%
-  group_by(RouteNumber) %>%
-  filter(n() >= 4000) %>%
+  filter(bus_speed %in% c('SuperExpress')) %>%
   ggplot(aes(RouteNumber, fill = RouteNumber)) +
+    geom_bar(na.rm = TRUE) +
+    xlab("RouteNumber")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-8.png)<!-- -->
+
+``` r
+transitdata %>%
+  filter(n() >= 4000) %>%
+  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +
     geom_bar() +
     xlab("RouteNumber")
 ```
 
-    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
-    ## `forcats::fct_explicit_na`
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-8.png)<!-- -->
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-9.png)<!-- -->
 
 ``` r
 transitdata %>%
@@ -338,4 +345,4 @@ transitdata %>%
   xlab("Day of the Week")
 ```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-9.png)<!-- -->
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-10.png)<!-- -->
