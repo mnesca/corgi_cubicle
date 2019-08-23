@@ -12,46 +12,13 @@ The idea of this practice dataset is:
 4\) i want to practice more on Tidyverse code and stop using BASE R
 coding
 
-``` r
-library(here) 
-```
-
-    ## here() starts at C:/Users/mnesc/Sync/R Data Projects/corgi_cubicle
-
-``` r
-library(tidyverse)
-```
-
-    ## -- Attaching packages ------------------------------------------------------------------------------------------------------ tidyverse 1.2.1 --
-
-    ## v ggplot2 3.2.0     v purrr   0.3.2
-    ## v tibble  2.1.3     v dplyr   0.8.3
-    ## v tidyr   0.8.3     v stringr 1.4.0
-    ## v readr   1.3.1     v forcats 0.4.0
-
-    ## -- Conflicts --------------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
-    ## x dplyr::filter() masks stats::filter()
-    ## x dplyr::lag()    masks stats::lag()
-
-``` r
-library(stringr)
-library(lubridate)
-```
-
-    ## 
-    ## Attaching package: 'lubridate'
-
-    ## The following object is masked from 'package:here':
-    ## 
-    ##     here
-
-    ## The following object is masked from 'package:base':
-    ## 
-    ##     date
-
-``` r
-knitr::opts_chunk$set(fig.width = 12, fig.height = 8)
-```
+Here is my initial startup for all the packages and options im
+running.  
+library(here)  
+library(tidyverse)  
+library(stringr)  
+library(lubridate)  
+knitr::opts\_chunk$set(fig.width = 12, fig.height = 8)
 
 ## Loading Datasets
 
@@ -61,21 +28,6 @@ this practice project. Since this dataset gets updated daily, I have
 gotten this dataset in June 29th 2019.
 
 Ref: <https://data.winnipeg.ca/Transit/Transit-Pass-ups/mer2-irmb>
-
-``` r
-transitdata <- read_csv(here::here("data", "Transit_Pass-ups.csv"))
-```
-
-    ## Parsed with column specification:
-    ## cols(
-    ##   `Pass-Up ID` = col_double(),
-    ##   `Pass-Up Type` = col_character(),
-    ##   Time = col_character(),
-    ##   `Route Number` = col_double(),
-    ##   `Route Name` = col_character(),
-    ##   `Route Destination` = col_character(),
-    ##   Location = col_character()
-    ## )
 
 ## Data Cleaning and Checking Variables
 
