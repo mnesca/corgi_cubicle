@@ -14,7 +14,7 @@ The idea of this practice dataset is:
   4) i want to practice more on Tidyverse code and stop using BASE R coding  
 
 
-```{r loading packages, include=FALSE, cache=FALSE}
+```{r loading packages, include=TRUE, cache=FALSE}
 library(here) 
 library(tidyverse)
 library(stringr)
