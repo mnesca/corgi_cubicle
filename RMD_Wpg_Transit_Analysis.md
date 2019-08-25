@@ -78,6 +78,10 @@ transitdata <- transitdata %>%
   mutate_at(vars("RouteDestination", "RouteName", "PassUpType", "RouteNumber"), as.factor)
 ```
 
+``` r
+  NARouteNumber <- fct_explicit_na('RouteNumber')
+```
+
 #### Testing the renamed variables
 
 ``` r
@@ -164,7 +168,7 @@ ggplot(transitdata) +
   xlab("Year")
 ```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
 Wow\! Interesting exploratory information\! The rate of pass-ups are
 increasing per year since 2015\! however in 2015 it did go down from
@@ -182,21 +186,31 @@ ggplot(transitdata) +
   xlab("Month")
 ```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
 and this is clearly very interesting\! most of the passups occur when –
 you guessed it\! school is starting\!
 
 ``` r
 transitdata %>%
-  filter(bus_speed == 'RapidTransit', year %in% c('2018')) %>%
-  ggplot(aes(day, fill = day)) +
+  ggplot(aes(fct_infreq(day), fill = day)) +
     geom_bar() +
-    facet_wrap(~ year) +
     xlab("Day")
 ```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+``` r
+transitdata %>%
+  ggplot(aes(dayofweek, fill = dayofweek)) +
+  geom_bar() +
+  facet_wrap(~ month, nrow = 4) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  xlab("Day of the Week")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->
 
 ``` r
 ggplot(transitdata) +
@@ -241,13 +255,43 @@ transitdata %>%
 
 ``` r
 transitdata %>%
+  filter(bus_speed == 'Express') %>%
+  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +  
+    geom_bar(na.rm = TRUE) +
+    xlab("RouteNumber")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-5.png)<!-- -->
+
+``` r
+transitdata %>%
+  filter(bus_speed %in% c('SuperExpress')) %>%
+  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+    geom_bar(na.rm = TRUE) +
+    xlab("RouteNumber")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-6.png)<!-- -->
+
+``` r
+transitdata %>%
+  filter(bus_speed %in% c('RapidTransit')) %>%
+  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+    geom_bar(na.rm = TRUE) +
+    xlab("RouteNumber")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-7.png)<!-- -->
+
+``` r
+transitdata %>%
   filter(year == '2018') %>%
   ggplot(aes(month)) +
     geom_bar() +
     xlab("Month for current year")
 ```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-5.png)<!-- -->
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-8.png)<!-- -->
 
 ``` r
 transitdata %>%
@@ -260,49 +304,70 @@ transitdata %>%
     xlab("RouteNumber")
 ```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-6.png)<!-- -->
-
-``` r
-transitdata %>%
-  filter(bus_speed == 'Express') %>%
-  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +  
-    geom_bar() +
-    xlab("RouteNumber")
-```
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-7.png)<!-- -->
-
-``` r
-transitdata %>%
-  filter(bus_speed %in% c('SuperExpress')) %>%
-  ggplot(aes(RouteNumber, fill = RouteNumber)) +
-    geom_bar(na.rm = TRUE) +
-    xlab("RouteNumber")
-```
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-8.png)<!-- -->
-
-``` r
-transitdata %>%
-  filter(n() >= 4000) %>%
-  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +
-    geom_bar() +
-    xlab("RouteNumber")
-```
-
 ![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-9.png)<!-- -->
 
 ``` r
-transitdata %>%
-  ggplot(aes(dayofweek, fill = dayofweek)) +
-  geom_bar() +
-  facet_wrap(~ month, nrow = 4) +
-  theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank()) +
-  xlab("Day of the Week")
+transitdata %>% 
+  group_by(RouteNumber) %>% 
+  mutate(freq = n()) %>% 
+  ungroup() %>% 
+  filter(freq > 2000, year == '2017', PassUpType == 'Full Bus Pass-Up') %>%
+  select(-freq) %>%
+  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +
+    geom_bar() +
+    facet_wrap(~ year) +
+    xlab("RouteNumber")
 ```
 
+    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
+    ## `forcats::fct_explicit_na`
+    
+    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
+    ## `forcats::fct_explicit_na`
+
 ![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-10.png)<!-- -->
+
+``` r
+transitdata %>% 
+  group_by(RouteNumber) %>% 
+  mutate(freq = n()) %>% 
+  ungroup() %>% 
+  filter(freq > 2000, year == '2018', PassUpType == 'Full Bus Pass-Up') %>%
+  select(-freq) %>%
+  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +
+    geom_bar() +
+    facet_wrap(~ year) +
+    xlab("RouteNumber")
+```
+
+    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
+    ## `forcats::fct_explicit_na`
+    
+    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
+    ## `forcats::fct_explicit_na`
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-11.png)<!-- -->
+
+``` r
+transitdata %>% 
+  group_by(RouteNumber) %>% 
+  mutate(freq = n()) %>% 
+  ungroup() %>% 
+  filter(freq > 2000, year == '2019', PassUpType == 'Full Bus Pass-Up') %>%
+  select(-freq) %>%
+  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +
+    geom_bar() +
+    facet_wrap(~ year) +
+    xlab("RouteNumber")
+```
+
+    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
+    ## `forcats::fct_explicit_na`
+    
+    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
+    ## `forcats::fct_explicit_na`
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-12.png)<!-- -->
 
 ## Lessons Learned and Notes
 
@@ -363,7 +428,7 @@ ggplot(transitdata) +
   xlab("Where the bus went")
 ```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 ``` r
 ggplot(transitdata) +
@@ -372,4 +437,4 @@ ggplot(transitdata) +
   xlab("Name of the Route")
 ```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-5-2.png)<!-- -->
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-6-2.png)<!-- -->

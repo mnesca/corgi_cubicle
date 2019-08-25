@@ -64,6 +64,11 @@ transitdata <- transitdata %>%
   mutate_at(vars("RouteDestination", "RouteName", "PassUpType", "RouteNumber"), as.factor)
 ```
 
+```{r}
+  NARouteNumber <- fct_explicit_na('RouteNumber')
+```
+
+
 #### Testing the renamed variables
 ```{r GGPLOT Test, include=TRUE}
 ggplot(transitdata) +
@@ -153,11 +158,17 @@ and this is clearly very interesting! most of the passups occur when -- you gues
 
 ```{r include=TRUE}
 transitdata %>%
-  filter(bus_speed == 'RapidTransit', year %in% c('2018')) %>%
-  ggplot(aes(day, fill = day)) +
+  ggplot(aes(fct_infreq(day), fill = day)) +
     geom_bar() +
-    facet_wrap(~ year) +
     xlab("Day")
+
+transitdata %>%
+  ggplot(aes(dayofweek, fill = dayofweek)) +
+  geom_bar() +
+  facet_wrap(~ month, nrow = 4) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  xlab("Day of the Week")
 ```
 
 ```{r checking new variable i created, include=TRUE}
@@ -187,6 +198,24 @@ transitdata %>%
     xlab("RouteNumber")
 
 transitdata %>%
+  filter(bus_speed == 'Express') %>%
+  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +  
+    geom_bar(na.rm = TRUE) +
+    xlab("RouteNumber")
+
+transitdata %>%
+  filter(bus_speed %in% c('SuperExpress')) %>%
+  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+    geom_bar(na.rm = TRUE) +
+    xlab("RouteNumber")
+
+transitdata %>%
+  filter(bus_speed %in% c('RapidTransit')) %>%
+  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+    geom_bar(na.rm = TRUE) +
+    xlab("RouteNumber")
+
+transitdata %>%
   filter(year == '2018') %>%
   ggplot(aes(month)) +
     geom_bar() +
@@ -201,31 +230,38 @@ transitdata %>%
         axis.ticks.x=element_blank()) +
     xlab("RouteNumber")
 
-transitdata %>%
-  filter(bus_speed == 'Express') %>%
-  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +  
-    geom_bar() +
-    xlab("RouteNumber")
-
-transitdata %>%
-  filter(bus_speed %in% c('SuperExpress')) %>%
-  ggplot(aes(RouteNumber, fill = RouteNumber)) +
-    geom_bar(na.rm = TRUE) +
-    xlab("RouteNumber")
-
-transitdata %>%
-  filter(n() >= 4000) %>%
+transitdata %>% 
+  group_by(RouteNumber) %>% 
+  mutate(freq = n()) %>% 
+  ungroup() %>% 
+  filter(freq > 2000, year == '2017', PassUpType == 'Full Bus Pass-Up') %>%
+  select(-freq) %>%
   ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +
     geom_bar() +
+    facet_wrap(~ year) +
     xlab("RouteNumber")
 
-transitdata %>%
-  ggplot(aes(dayofweek, fill = dayofweek)) +
-  geom_bar() +
-  facet_wrap(~ month, nrow = 4) +
-  theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank()) +
-  xlab("Day of the Week")
+transitdata %>% 
+  group_by(RouteNumber) %>% 
+  mutate(freq = n()) %>% 
+  ungroup() %>% 
+  filter(freq > 2000, year == '2018', PassUpType == 'Full Bus Pass-Up') %>%
+  select(-freq) %>%
+  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +
+    geom_bar() +
+    facet_wrap(~ year) +
+    xlab("RouteNumber")
+
+transitdata %>% 
+  group_by(RouteNumber) %>% 
+  mutate(freq = n()) %>% 
+  ungroup() %>% 
+  filter(freq > 2000, year == '2019', PassUpType == 'Full Bus Pass-Up') %>%
+  select(-freq) %>%
+  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +
+    geom_bar() +
+    facet_wrap(~ year) +
+    xlab("RouteNumber")
 ```
 
 ## Lessons Learned and Notes
