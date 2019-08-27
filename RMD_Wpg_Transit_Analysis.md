@@ -307,32 +307,29 @@ transitdata %>%
 ![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-9.png)<!-- -->
 
 ``` r
+transitdata %>%
+  filter(year %in% c('2017', '2018', '2019'), 
+         RouteNumber %in% c('11'),
+         PassUpType == 'Full Bus Pass-Up') %>%
+  ggplot(aes(RouteDestination, fill = RouteDestination)) +
+    geom_bar() +
+    facet_wrap(~ year) +
+    theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+    xlab("Route Destination -- RouteNumber = 11")
+```
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-10.png)<!-- -->
+
+``` r
+# Possible Research Question:  Does a Route Number with multiple destinations(162,11,75) cause more passups than dedicated route busses(160)?
+
+
 transitdata %>% 
   group_by(RouteNumber) %>% 
   mutate(freq = n()) %>% 
   ungroup() %>% 
   filter(freq > 2000, year == '2017', PassUpType == 'Full Bus Pass-Up') %>%
-  select(-freq) %>%
-  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +
-    geom_bar() +
-    facet_wrap(~ year) +
-    xlab("RouteNumber")
-```
-
-    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
-    ## `forcats::fct_explicit_na`
-    
-    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
-    ## `forcats::fct_explicit_na`
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-10.png)<!-- -->
-
-``` r
-transitdata %>% 
-  group_by(RouteNumber) %>% 
-  mutate(freq = n()) %>% 
-  ungroup() %>% 
-  filter(freq > 2000, year == '2018', PassUpType == 'Full Bus Pass-Up') %>%
   select(-freq) %>%
   ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +
     geom_bar() +
@@ -353,7 +350,7 @@ transitdata %>%
   group_by(RouteNumber) %>% 
   mutate(freq = n()) %>% 
   ungroup() %>% 
-  filter(freq > 2000, year == '2019', PassUpType == 'Full Bus Pass-Up') %>%
+  filter(freq > 2000, year == '2018', PassUpType == 'Full Bus Pass-Up') %>%
   select(-freq) %>%
   ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +
     geom_bar() +
@@ -368,6 +365,27 @@ transitdata %>%
     ## `forcats::fct_explicit_na`
 
 ![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-12.png)<!-- -->
+
+``` r
+transitdata %>% 
+  group_by(RouteNumber) %>% 
+  mutate(freq = n()) %>% 
+  ungroup() %>% 
+  filter(freq > 2000, year == '2019', PassUpType == 'Full Bus Pass-Up') %>%
+  select(-freq) %>%
+  ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +
+    geom_bar() +
+    facet_wrap(~ year) +
+    xlab("RouteNumber")
+```
+
+    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
+    ## `forcats::fct_explicit_na`
+    
+    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
+    ## `forcats::fct_explicit_na`
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-13.png)<!-- -->
 
 ## Lessons Learned and Notes
 

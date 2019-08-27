@@ -230,6 +230,19 @@ transitdata %>%
         axis.ticks.x=element_blank()) +
     xlab("RouteNumber")
 
+transitdata %>%
+  filter(year %in% c('2017', '2018', '2019'), 
+         RouteNumber %in% c('11'),
+         PassUpType == 'Full Bus Pass-Up') %>%
+  ggplot(aes(RouteDestination, fill = RouteDestination)) +
+    geom_bar() +
+    facet_wrap(~ year) +
+    theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+    xlab("Route Destination -- RouteNumber = 11")
+# Possible Research Question:  Does a Route Number with multiple destinations(162,11,75) cause more passups than dedicated route busses(160)?
+
+
 transitdata %>% 
   group_by(RouteNumber) %>% 
   mutate(freq = n()) %>% 
