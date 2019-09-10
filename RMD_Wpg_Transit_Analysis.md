@@ -78,10 +78,6 @@ transitdata <- transitdata %>%
   mutate_at(vars("RouteDestination", "RouteName", "PassUpType", "RouteNumber"), as.factor)
 ```
 
-``` r
-  NARouteNumber <- fct_explicit_na('RouteNumber')
-```
-
 #### Testing the renamed variables
 
 ``` r
@@ -168,7 +164,7 @@ ggplot(transitdata) +
   xlab("Year")
 ```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
 Wow\! Interesting exploratory information\! The rate of pass-ups are
 increasing per year since 2015\! however in 2015 it did go down from
@@ -186,7 +182,7 @@ ggplot(transitdata) +
   xlab("Month")
 ```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
 and this is clearly very interesting\! most of the passups occur when –
 you guessed it\! school is starting\!
@@ -198,7 +194,7 @@ transitdata %>%
     xlab("Day")
 ```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
 ``` r
 transitdata %>%
@@ -210,11 +206,171 @@ transitdata %>%
   xlab("Day of the Week")
 ```
 
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-3-2.png)<!-- -->
+
+``` r
+transitdata %>% 
+  group_by(fct_explicit_na(RouteNumber)) %>%
+  mutate(freq = n()) %>%
+  filter(PassUpType == 'Full Bus Pass-Up',
+         year == '2018') %>%
+  print(transitdata) %>%
+  ggplot(aes(freq)) +
+    geom_histogram(binwidth = 9)
+```
+
+    ## # A tibble: 16,046 x 16
+    ## # Groups:   fct_explicit_na(RouteNumber) [73]
+    ##    PassUpID PassUpType Date  Clock RouteNumber RouteName RouteDestination
+    ##       <dbl> <fct>      <chr> <chr> <fct>       <fct>     <fct>           
+    ##  1  2816872 Full Bus ~ 2018~ 18:2~ 170         Fort Ric~ To University o~
+    ##  2  2816870 Full Bus ~ 2018~ 18:2~ 11          Portage-~ City Hall       
+    ##  3  2816646 Full Bus ~ 2018~ 17:4~ 11          Portage-~ Via Donwood     
+    ##  4  2816462 Full Bus ~ 2018~ 21:3~ 11          Portage-~ Via Glenway     
+    ##  5  2816449 Full Bus ~ 2018~ 20:0~ 11          Portage-~ Via Glenway     
+    ##  6  2816287 Full Bus ~ 2018~ 14:4~ 18          North Ma~ To Corydon & Ed~
+    ##  7  2816088 Full Bus ~ 2018~ 21:5~ 11          Portage-~ Via St.Charles  
+    ##  8  2816085 Full Bus ~ 2018~ 21:2~ 170         Fort Ric~ To University o~
+    ##  9  2815984 Full Bus ~ 2018~ 15:3~ 11          Portage-~ To Polo Park    
+    ## 10  2815952 Full Bus ~ 2018~ 14:3~ 162         Ft. Rich~ To Downtown     
+    ## # ... with 16,036 more rows, and 9 more variables: Latitude <chr>,
+    ## #   Longitude <chr>, year <fct>, month <fct>, day <fct>, bus_speed <chr>,
+    ## #   dayofweek <ord>, `fct_explicit_na(RouteNumber)` <fct>, freq <int>
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+``` r
+transitdata %>% 
+  group_by(fct_explicit_na(RouteNumber)) %>%
+  mutate(freq = n()) %>%
+  filter(freq > 2500, freq < 3750, 
+         PassUpType == 'Full Bus Pass-Up',
+         year == '2018') %>%
+  print(transitdata) %>%
+  ggplot(aes(freq)) +
+    geom_histogram(binwidth = 1)
+```
+
+    ## # A tibble: 2,582 x 16
+    ## # Groups:   fct_explicit_na(RouteNumber) [7]
+    ##    PassUpID PassUpType Date  Clock RouteNumber RouteName RouteDestination
+    ##       <dbl> <fct>      <chr> <chr> <fct>       <fct>     <fct>           
+    ##  1  2814719 Full Bus ~ 2018~ 18:2~ 47          Transcona To Downtown     
+    ##  2  2814668 Full Bus ~ 2018~ 16:4~ 15          Sargent-~ Airport Via Wel~
+    ##  3  2814248 Full Bus ~ 2018~ 17:1~ 47          Transcona To Downtown     
+    ##  4  2814150 Full Bus ~ 2018~ 15:5~ 47          Transcona To Downtown     
+    ##  5  2814127 Full Bus ~ 2018~ 15:4~ 22          Assinibo~ To Westwood     
+    ##  6  2814043 Full Bus ~ 2018~ 14:5~ 14          St. Mary~ Via Dakota      
+    ##  7  2814042 Full Bus ~ 2018~ 14:5~ 47          Transcona To Downtown     
+    ##  8  2814029 Full Bus ~ 2018~ 14:4~ 55          St.Anne's Via Meadowood   
+    ##  9  2814021 Full Bus ~ 2018~ 14:4~ 55          St.Anne's Via Dakota      
+    ## 10  2813952 Full Bus ~ 2018~ 13:4~ 47          Transcona Via Regent      
+    ## # ... with 2,572 more rows, and 9 more variables: Latitude <chr>,
+    ## #   Longitude <chr>, year <fct>, month <fct>, day <fct>, bus_speed <chr>,
+    ## #   dayofweek <ord>, `fct_explicit_na(RouteNumber)` <fct>, freq <int>
+
 ![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->
 
 ``` r
-ggplot(transitdata) +
-  geom_bar(aes(fct_infreq(bus_speed), fill = bus_speed)) +
+transitdata %>% 
+  group_by(fct_explicit_na(RouteNumber)) %>%
+  mutate(freq = n()) %>%
+  filter(freq > 5000, 
+         PassUpType == 'Full Bus Pass-Up',
+         year == '2018') %>%
+  print(transitdata) %>%
+  ggplot(aes(fct_infreq(fct_explicit_na(RouteNumber)))) +
+    geom_bar()
+```
+
+    ## # A tibble: 7,456 x 16
+    ## # Groups:   fct_explicit_na(RouteNumber) [7]
+    ##    PassUpID PassUpType Date  Clock RouteNumber RouteName RouteDestination
+    ##       <dbl> <fct>      <chr> <chr> <fct>       <fct>     <fct>           
+    ##  1  2816870 Full Bus ~ 2018~ 18:2~ 11          Portage-~ City Hall       
+    ##  2  2816646 Full Bus ~ 2018~ 17:4~ 11          Portage-~ Via Donwood     
+    ##  3  2816462 Full Bus ~ 2018~ 21:3~ 11          Portage-~ Via Glenway     
+    ##  4  2816449 Full Bus ~ 2018~ 20:0~ 11          Portage-~ Via Glenway     
+    ##  5  2816287 Full Bus ~ 2018~ 14:4~ 18          North Ma~ To Corydon & Ed~
+    ##  6  2816088 Full Bus ~ 2018~ 21:5~ 11          Portage-~ Via St.Charles  
+    ##  7  2815984 Full Bus ~ 2018~ 15:3~ 11          Portage-~ To Polo Park    
+    ##  8  2815952 Full Bus ~ 2018~ 14:3~ 162         Ft. Rich~ To Downtown     
+    ##  9  2815812 Full Bus ~ 2018~ 21:2~ 11          Portage-~ Via Glenway     
+    ## 10  2815810 Full Bus ~ 2018~ 21:1~ 11          Portage-~ Via Rothesay    
+    ## # ... with 7,446 more rows, and 9 more variables: Latitude <chr>,
+    ## #   Longitude <chr>, year <fct>, month <fct>, day <fct>, bus_speed <chr>,
+    ## #   dayofweek <ord>, `fct_explicit_na(RouteNumber)` <fct>, freq <int>
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-4-3.png)<!-- -->
+
+``` r
+transitdata %>% 
+  group_by(fct_explicit_na(RouteNumber)) %>%
+  mutate(freq = n()) %>%
+  filter(freq < 100, 
+         PassUpType == 'Full Bus Pass-Up',
+         year == '2018') %>%
+  print(transitdata) %>%
+  ggplot(aes(fct_infreq(fct_explicit_na(RouteNumber)))) +
+    geom_bar()
+```
+
+    ## # A tibble: 128 x 16
+    ## # Groups:   fct_explicit_na(RouteNumber) [14]
+    ##    PassUpID PassUpType Date  Clock RouteNumber RouteName RouteDestination
+    ##       <dbl> <fct>      <chr> <chr> <fct>       <fct>     <fct>           
+    ##  1  2815874 Full Bus ~ 2018~ 11:1~ 86          <NA>      Bridgewater     
+    ##  2  2815764 Full Bus ~ 2018~ 18:2~ 84          <NA>      Fort Rouge Stat~
+    ##  3  2815693 Full Bus ~ 2018~ 16:2~ 84          <NA>      Fort Rouge Stat~
+    ##  4  2815522 Full Bus ~ 2018~ 12:1~ 84          <NA>      Walmart & Kenas~
+    ##  5  2815476 Full Bus ~ 2018~ 10:4~ 84          <NA>      Walmart & Kenas~
+    ##  6  2804480 Full Bus ~ 2018~ 16:1~ 50          Archibald To Sage Creek   
+    ##  7  2803761 Full Bus ~ 2018~ 14:1~ 10          St.Bonif~ St.Boniface-Pro~
+    ##  8  2802791 Full Bus ~ 2018~ 11:0~ 74          Kenaston  University of M~
+    ##  9  2802360 Full Bus ~ 2018~ 15:4~ 68          Crescent  University of W~
+    ## 10  2801940 Full Bus ~ 2018~ 08:1~ 68          Crescent  University of W~
+    ## # ... with 118 more rows, and 9 more variables: Latitude <chr>,
+    ## #   Longitude <chr>, year <fct>, month <fct>, day <fct>, bus_speed <chr>,
+    ## #   dayofweek <ord>, `fct_explicit_na(RouteNumber)` <fct>, freq <int>
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-4-4.png)<!-- -->
+
+``` r
+transitdata %>% 
+  group_by(fct_explicit_na(RouteNumber)) %>%
+  mutate(freq = n()) %>%
+  filter(freq > 2500, freq < 3750, 
+         PassUpType == 'Full Bus Pass-Up',
+         year == '2018') %>%
+  print(transitdata) %>%
+  ggplot(aes(fct_infreq(RouteNumber))) +
+    geom_bar()
+```
+
+    ## # A tibble: 2,582 x 16
+    ## # Groups:   fct_explicit_na(RouteNumber) [7]
+    ##    PassUpID PassUpType Date  Clock RouteNumber RouteName RouteDestination
+    ##       <dbl> <fct>      <chr> <chr> <fct>       <fct>     <fct>           
+    ##  1  2814719 Full Bus ~ 2018~ 18:2~ 47          Transcona To Downtown     
+    ##  2  2814668 Full Bus ~ 2018~ 16:4~ 15          Sargent-~ Airport Via Wel~
+    ##  3  2814248 Full Bus ~ 2018~ 17:1~ 47          Transcona To Downtown     
+    ##  4  2814150 Full Bus ~ 2018~ 15:5~ 47          Transcona To Downtown     
+    ##  5  2814127 Full Bus ~ 2018~ 15:4~ 22          Assinibo~ To Westwood     
+    ##  6  2814043 Full Bus ~ 2018~ 14:5~ 14          St. Mary~ Via Dakota      
+    ##  7  2814042 Full Bus ~ 2018~ 14:5~ 47          Transcona To Downtown     
+    ##  8  2814029 Full Bus ~ 2018~ 14:4~ 55          St.Anne's Via Meadowood   
+    ##  9  2814021 Full Bus ~ 2018~ 14:4~ 55          St.Anne's Via Dakota      
+    ## 10  2813952 Full Bus ~ 2018~ 13:4~ 47          Transcona Via Regent      
+    ## # ... with 2,572 more rows, and 9 more variables: Latitude <chr>,
+    ## #   Longitude <chr>, year <fct>, month <fct>, day <fct>, bus_speed <chr>,
+    ## #   dayofweek <ord>, `fct_explicit_na(RouteNumber)` <fct>, freq <int>
+
+![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-4-5.png)<!-- -->
+
+``` r
+transitdata %>%
+ggplot(aes(fct_infreq(bus_speed), fill = bus_speed)) +
+  geom_bar() +
   facet_wrap(~ year, nrow = 4) +
   theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
@@ -226,8 +382,9 @@ ggplot(transitdata) +
 
 ``` r
 # two categorical variables - dotmap by year
-ggplot(transitdata) +
-  geom_count(aes(year, bus_speed))
+transitdata %>%
+ggplot(aes(year, bus_speed)) +
+  geom_count()
 ```
 
 ![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-2.png)<!-- -->

@@ -64,10 +64,6 @@ transitdata <- transitdata %>%
   mutate_at(vars("RouteDestination", "RouteName", "PassUpType", "RouteNumber"), as.factor)
 ```
 
-```{r}
-  NARouteNumber <- fct_explicit_na('RouteNumber')
-```
-
 
 #### Testing the renamed variables
 ```{r GGPLOT Test, include=TRUE}
@@ -171,9 +167,61 @@ transitdata %>%
   xlab("Day of the Week")
 ```
 
+```{r}
+transitdata %>% 
+  group_by(fct_explicit_na(RouteNumber)) %>%
+  mutate(freq = n()) %>%
+  filter(PassUpType == 'Full Bus Pass-Up',
+         year == '2018') %>%
+  print(transitdata) %>%
+  ggplot(aes(freq)) +
+    geom_histogram(binwidth = 9)
+
+transitdata %>% 
+  group_by(fct_explicit_na(RouteNumber)) %>%
+  mutate(freq = n()) %>%
+  filter(freq > 2500, freq < 3750, 
+         PassUpType == 'Full Bus Pass-Up',
+         year == '2018') %>%
+  print(transitdata) %>%
+  ggplot(aes(freq)) +
+    geom_histogram(binwidth = 1)
+
+transitdata %>% 
+  group_by(fct_explicit_na(RouteNumber)) %>%
+  mutate(freq = n()) %>%
+  filter(freq > 5000, 
+         PassUpType == 'Full Bus Pass-Up',
+         year == '2018') %>%
+  print(transitdata) %>%
+  ggplot(aes(fct_infreq(fct_explicit_na(RouteNumber)))) +
+    geom_bar()
+
+transitdata %>% 
+  group_by(fct_explicit_na(RouteNumber)) %>%
+  mutate(freq = n()) %>%
+  filter(freq < 100, 
+         PassUpType == 'Full Bus Pass-Up',
+         year == '2018') %>%
+  print(transitdata) %>%
+  ggplot(aes(fct_infreq(fct_explicit_na(RouteNumber)))) +
+    geom_bar()
+
+transitdata %>% 
+  group_by(fct_explicit_na(RouteNumber)) %>%
+  mutate(freq = n()) %>%
+  filter(freq > 2500, freq < 3750, 
+         PassUpType == 'Full Bus Pass-Up',
+         year == '2018') %>%
+  print(transitdata) %>%
+  ggplot(aes(fct_infreq(RouteNumber))) +
+    geom_bar()
+```
+
 ```{r checking new variable i created, include=TRUE}
-ggplot(transitdata) +
-  geom_bar(aes(fct_infreq(bus_speed), fill = bus_speed)) +
+transitdata %>%
+ggplot(aes(fct_infreq(bus_speed), fill = bus_speed)) +
+  geom_bar() +
   facet_wrap(~ year, nrow = 4) +
   theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
@@ -181,8 +229,9 @@ ggplot(transitdata) +
   ylab("count of passups")
 
 # two categorical variables - dotmap by year
-ggplot(transitdata) +
-  geom_count(aes(year, bus_speed))
+transitdata %>%
+ggplot(aes(year, bus_speed)) +
+  geom_count()
 
 # two categorical variables - heatmap by month
 transitdata %>% 
