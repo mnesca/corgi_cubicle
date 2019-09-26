@@ -7,6 +7,9 @@ I'm a beginner data scientist, i am using this repository to practice and get ti
 For now im sticking with Canadian open data sources:
   https://data.winnipeg.ca/  -- i am currently going to be doing analysis on transit data.
 
+UPDATE 09-26-2019:
+  - Hey all! School has started and I wanted to give an update, I slowed down with my Winnipeg Transit Analysis (although I do really miss it, I want to extract as much insight as possible!), however I will be picking up on doing textual analysis since this is what i am planning to do for my thesis. I am currently in the works for learning pdftools package with R then will be using tidytext by Julia Silge. I want to create some practice analysis on it because i have specific measures to conduct. I apologize for the inactivity, but i assure you work is being done behind the scenes! Stay tuned!
+
 UPDATE 08-09-2019: 
   - Quick update, I unfortunately have not been coding recently, and miss it terribly (I love the practice with R)! Recently however, I have been immersed in a bunch of Data Science books that I bought, especially text mining and overall data science processes, knowledge, and statistics. Thanks to my internship I was able to buy a total of 10-12 books! So far ive read 1 completely (Text mining with R by Julia Silge), and im working on 2 other books (R for Data Sciences, and Practical Text Mining with R). So please know that while I have not been coding I have been actively checking my Github along with studying more data sciences!
 
