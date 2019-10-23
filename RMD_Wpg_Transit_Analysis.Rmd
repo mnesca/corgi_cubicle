@@ -21,6 +21,7 @@ library(stringr)
 library(lubridate)
 library(knitr)
 library(reprex)
+library(datapasta)
 opts_chunk$set(fig.width = 12, fig.height = 8)
 ```
 
@@ -78,8 +79,6 @@ transitdataclean <- transitdataclean %>%
 transitdataclean <- transitdataclean %>%
   mutate(Day = mdy(Day), Hour = hour(Time))
 ```
-
-
 
 
 
@@ -394,3 +393,33 @@ ggplot(transitdata) +
   coord_flip() +
   xlab("Name of the Route")
 ```
+
+### Learning how to use Reprex() and preparing my data for reprex using datapasta
+
+Today (10-22-2019) i learned something very valuable and one of the reasons i am currently really happy about this is because, when in doubt i can join the RStudio Community and ask for help in a very user friendly way for the helpers and not only that whats important is that i can do this on my own. 
+
+I cannot stress enough how empowering this is for a person learning new code. Most of the help i usually go to are books, workshops, or even my school colleagues or teachers, and sometimes that is not enough for a particular context for *my* code. so to have an entire world community helping me, i can feel more confident with my coding! 
+
+the packages to download are as follows:
+
+```{r Packages for reprex and datapasta, include=TRUE, cache=FALSE, eval=FALSE}
+#install.packages(c("reprex", "datapasta"))
+
+#library(reprex) 
+#library(datapasta)
+```
+
+The first package (Reprex) by Jenny Bryan means "*Repr*oduceable *Ex*ample" and what it does is essentially the code you copy will be pasted - from the clipboard - in a markdown chunk along with the output results (including the errors - if any). This is so that it can be easily copied and pasted for the person helping you. The caveat is that the code has to be "self contained" and be able to run everything it needs to reproduce the error (or result). So this means you have to include all the library(...) code, loading the data (see next paragraph), along with the associated code you want to inspect.
+
+the second package (datapasta) by Miles McBain is the ability to very simply render your data so that it is *significantly easier* to copy and paste for your reprex.  I had *TONS* of trouble doing this originally, it was very diffcult to render my data such that it is easily reproducible. But now thanks to datapasta it is easily done with several lines of code, see below for an example:
+
+```{r Packages for reprex and datapasta, include=TRUE, cache=FALSE, eval=FALSE}
+#TD <- head(transitdataclean)
+#tribble_paste(TD)
+```
+There are even more useful commands but i found this absolutely wonderful when trying to copy and paste my data for a reprex or even other applications!
+
+here is Miles McBain's github for datapasta:
+<https://github.com/MilesMcBain/datapasta#getting-data-into-source>
+
+
