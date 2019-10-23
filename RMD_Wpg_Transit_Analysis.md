@@ -12,13 +12,18 @@ The idea of this practice dataset is:
 4\) i want to practice more on Tidyverse code and stop using BASE R
 coding
 
-Here is my initial startup for all the packages and options im
-running.  
-library(here)  
-library(tidyverse)  
-library(stringr)  
-library(lubridate)  
-knitr::opts\_chunk$set(fig.width = 12, fig.height = 8)
+Here is my initial startup for all the packages and options im running.
+
+``` r
+library(here) 
+library(tidyverse)
+library(stringr)
+library(lubridate)
+library(knitr)
+library(reprex)
+library(datapasta)
+opts_chunk$set(fig.width = 12, fig.height = 8)
+```
 
 ## Loading Datasets
 
@@ -32,6 +37,11 @@ so I re-downloaded a new dataset on August 22nd 2019.
 
 Ref: <https://data.winnipeg.ca/Transit/Transit-Pass-ups/mer2-irmb>
 
+``` r
+transitdata <- read_csv(here::here("data", "Transit_Pass-ups.csv"))
+summary(transitdata)
+```
+
 ## Data Cleaning and Checking Variables (AKA - preprocessing)
 
 Here I want to describe what my variables initially look like before
@@ -42,58 +52,24 @@ efficient in your work.
 UPDATE 07-31-2019: definitely by practice, cleaning and visualizing data
 is a circular process.
 
-Here are a list of the variables uncleaned:
-
-``` r
-sumvar <- summary(transitdata)
-print(sumvar)
-```
-
-    ##    Pass-Up ID      Pass-Up Type           Time            Route Number   
-    ##  Min.   : 363450   Length:116321      Length:116321      Min.   :  1.00  
-    ##  1st Qu.:1238820   Class :character   Class :character   1st Qu.: 18.00  
-    ##  Median :1871030   Mode  :character   Mode  :character   Median : 36.00  
-    ##  Mean   :1802710                                         Mean   : 59.64  
-    ##  3rd Qu.:2488608                                         3rd Qu.: 75.00  
-    ##  Max.   :2981877                                         Max.   :185.00  
-    ##                                                          NA's   :49      
-    ##   Route Name        Route Destination    Location        
-    ##  Length:116321      Length:116321      Length:116321     
-    ##  Class :character   Class :character   Class :character  
-    ##  Mode  :character   Mode  :character   Mode  :character  
-    ##                                                          
-    ##                                                          
-    ##                                                          
-    ## 
-
 ### Renaming, and changing variables to factors
 
 ``` r
-transitdata <- transitdata %>% 
-  dplyr::rename(RouteDestination = `Route Destination`) %>%
-  dplyr::rename(RouteName = `Route Name`) %>%
-  dplyr::rename(PassUpType = `Pass-Up Type`) %>%
-  dplyr::rename(RouteNumber = `Route Number`) %>%
-  dplyr::rename(PassUpID = `Pass-Up ID`) %>%
+transitdataclean <- transitdata %>% 
+  rename(RouteDestination = `Route Destination`) %>%
+  rename(RouteName = `Route Name`) %>%
+  rename(PassUpType = `Pass-Up Type`) %>%
+  rename(RouteNumber = `Route Number`) %>%
+  rename(PassUpID = `Pass-Up ID`) %>%
   mutate_at(vars("RouteDestination", "RouteName", "PassUpType", "RouteNumber"), as.factor)
 ```
-
-#### Testing the renamed variables
-
-``` r
-ggplot(transitdata) +
-  geom_bar(aes(PassUpType, fill = PassUpType)) +
-  xlab("Type of bus that passed")
-```
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/GGPLOT%20Test-1.png)<!-- -->
 
 ### Changed longitude and latitude
 
 For potential spatial analysis in the future
 
 ``` r
-transitdata <- transitdata %>%
+transitdataclean <- transitdataclean %>%
   separate(Location, into = c("Extra", "Lat1", "Long1"), sep = " ") %>%
   separate(Lat1, into = c("Extra1", "Latitude"), sep = 1) %>%
   separate(Long1, into = c("Longitude", "Extra2"), sep = -1) %>%
@@ -106,15 +82,31 @@ Here is where we clean the time variable - i want to lubridate the time
 variable first, then split up time and date
 
 ``` r
-transitdata <- transitdata %>%
+transitdataclean <- transitdataclean %>%
+  separate(Time, into = c("Day", "Time"), sep = 11)  
+```
+
+``` r
+transitdataclean <- transitdataclean %>%
+  mutate(Day = mdy(Day), Hour = hour(Time))
+```
+
+``` r
+starttime <- as.numeric(hms::hms(00, 30, 05))
+transitdataclean <- transitdataclean %>%
   mutate(Time = mdy_hms(Time)) %>%
   separate(Time, into = c("Date", "Clock"), sep = " ")
+```
+
+``` r
+transitdataclean <- transitdataclean %>%
+  mutate(timetopassup = Clock - starttime)
 ```
 
 Creating new variables for splitting up dates into months days and years
 
 ``` r
-transitdata <- transitdata %>%
+transitdataclean <- transitdataclean %>%
   mutate(year = year(Date), 
          month = month(Date), 
          day = day(Date),
@@ -132,22 +124,20 @@ frequent
 transit, etc”
 
 ``` r
-transitdata <- transitdata %>%
+transitdataclean <- transitdataclean %>%
   mutate(bus_speed = ifelse(RouteNumber %in% c(137,160,161,162,163,170,180,181,183,185), 'RapidTransit',
                             ifelse(RouteNumber %in% c(101,102,109,110), 'Dart',
                                    ifelse(RouteNumber %in% c(1,2,3), 'DowntownSpirit',
                                           ifelse(RouteNumber %in% c(21,22,24,28,30,31,32,40,41,42,46,48,54,57,58,59,64,65,67), 'Express',
                                                  ifelse(RouteNumber %in% c(25,34,35,36), 'SuperExpress', 'Regular'))))))
+## number 4 check!
 ```
-
-number 4 check\! Now lets visualize\!
 
 ``` r
-transitdata <- transitdata %>%
+transitdataclean <- transitdataclean %>%
   mutate(dayofweek = wday(Date, label = TRUE, abbr = FALSE))
+## number 2 check!
 ```
-
-number 2 check\!
 
 It seems that I have cleaned everything I wish to clean, I have
 separated all the variables in their component parts including the
@@ -163,8 +153,6 @@ ggplot(transitdata) +
   geom_bar(aes(year, fill = year)) +
   xlab("Year")
 ```
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
 Wow\! Interesting exploratory information\! The rate of pass-ups are
 increasing per year since 2015\! however in 2015 it did go down from
@@ -182,8 +170,6 @@ ggplot(transitdata) +
   xlab("Month")
 ```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
-
 and this is clearly very interesting\! most of the passups occur when –
 you guessed it\! school is starting\!
 
@@ -192,11 +178,7 @@ transitdata %>%
   ggplot(aes(fct_infreq(day), fill = day)) +
     geom_bar() +
     xlab("Day")
-```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
-
-``` r
 transitdata %>%
   ggplot(aes(dayofweek, fill = dayofweek)) +
   geom_bar() +
@@ -205,8 +187,6 @@ transitdata %>%
         axis.ticks.x=element_blank()) +
   xlab("Day of the Week")
 ```
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-3-2.png)<!-- -->
 
 ``` r
 transitdata %>% 
@@ -217,29 +197,7 @@ transitdata %>%
   print(transitdata) %>%
   ggplot(aes(freq)) +
     geom_histogram(binwidth = 9)
-```
 
-    ## # A tibble: 16,046 x 16
-    ## # Groups:   fct_explicit_na(RouteNumber) [73]
-    ##    PassUpID PassUpType Date  Clock RouteNumber RouteName RouteDestination
-    ##       <dbl> <fct>      <chr> <chr> <fct>       <fct>     <fct>           
-    ##  1  2816872 Full Bus ~ 2018~ 18:2~ 170         Fort Ric~ To University o~
-    ##  2  2816870 Full Bus ~ 2018~ 18:2~ 11          Portage-~ City Hall       
-    ##  3  2816646 Full Bus ~ 2018~ 17:4~ 11          Portage-~ Via Donwood     
-    ##  4  2816462 Full Bus ~ 2018~ 21:3~ 11          Portage-~ Via Glenway     
-    ##  5  2816449 Full Bus ~ 2018~ 20:0~ 11          Portage-~ Via Glenway     
-    ##  6  2816287 Full Bus ~ 2018~ 14:4~ 18          North Ma~ To Corydon & Ed~
-    ##  7  2816088 Full Bus ~ 2018~ 21:5~ 11          Portage-~ Via St.Charles  
-    ##  8  2816085 Full Bus ~ 2018~ 21:2~ 170         Fort Ric~ To University o~
-    ##  9  2815984 Full Bus ~ 2018~ 15:3~ 11          Portage-~ To Polo Park    
-    ## 10  2815952 Full Bus ~ 2018~ 14:3~ 162         Ft. Rich~ To Downtown     
-    ## # ... with 16,036 more rows, and 9 more variables: Latitude <chr>,
-    ## #   Longitude <chr>, year <fct>, month <fct>, day <fct>, bus_speed <chr>,
-    ## #   dayofweek <ord>, `fct_explicit_na(RouteNumber)` <fct>, freq <int>
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
-
-``` r
 transitdata %>% 
   group_by(fct_explicit_na(RouteNumber)) %>%
   mutate(freq = n()) %>%
@@ -249,29 +207,7 @@ transitdata %>%
   print(transitdata) %>%
   ggplot(aes(freq)) +
     geom_histogram(binwidth = 1)
-```
 
-    ## # A tibble: 2,582 x 16
-    ## # Groups:   fct_explicit_na(RouteNumber) [7]
-    ##    PassUpID PassUpType Date  Clock RouteNumber RouteName RouteDestination
-    ##       <dbl> <fct>      <chr> <chr> <fct>       <fct>     <fct>           
-    ##  1  2814719 Full Bus ~ 2018~ 18:2~ 47          Transcona To Downtown     
-    ##  2  2814668 Full Bus ~ 2018~ 16:4~ 15          Sargent-~ Airport Via Wel~
-    ##  3  2814248 Full Bus ~ 2018~ 17:1~ 47          Transcona To Downtown     
-    ##  4  2814150 Full Bus ~ 2018~ 15:5~ 47          Transcona To Downtown     
-    ##  5  2814127 Full Bus ~ 2018~ 15:4~ 22          Assinibo~ To Westwood     
-    ##  6  2814043 Full Bus ~ 2018~ 14:5~ 14          St. Mary~ Via Dakota      
-    ##  7  2814042 Full Bus ~ 2018~ 14:5~ 47          Transcona To Downtown     
-    ##  8  2814029 Full Bus ~ 2018~ 14:4~ 55          St.Anne's Via Meadowood   
-    ##  9  2814021 Full Bus ~ 2018~ 14:4~ 55          St.Anne's Via Dakota      
-    ## 10  2813952 Full Bus ~ 2018~ 13:4~ 47          Transcona Via Regent      
-    ## # ... with 2,572 more rows, and 9 more variables: Latitude <chr>,
-    ## #   Longitude <chr>, year <fct>, month <fct>, day <fct>, bus_speed <chr>,
-    ## #   dayofweek <ord>, `fct_explicit_na(RouteNumber)` <fct>, freq <int>
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->
-
-``` r
 transitdata %>% 
   group_by(fct_explicit_na(RouteNumber)) %>%
   mutate(freq = n()) %>%
@@ -281,29 +217,7 @@ transitdata %>%
   print(transitdata) %>%
   ggplot(aes(fct_infreq(fct_explicit_na(RouteNumber)))) +
     geom_bar()
-```
 
-    ## # A tibble: 7,456 x 16
-    ## # Groups:   fct_explicit_na(RouteNumber) [7]
-    ##    PassUpID PassUpType Date  Clock RouteNumber RouteName RouteDestination
-    ##       <dbl> <fct>      <chr> <chr> <fct>       <fct>     <fct>           
-    ##  1  2816870 Full Bus ~ 2018~ 18:2~ 11          Portage-~ City Hall       
-    ##  2  2816646 Full Bus ~ 2018~ 17:4~ 11          Portage-~ Via Donwood     
-    ##  3  2816462 Full Bus ~ 2018~ 21:3~ 11          Portage-~ Via Glenway     
-    ##  4  2816449 Full Bus ~ 2018~ 20:0~ 11          Portage-~ Via Glenway     
-    ##  5  2816287 Full Bus ~ 2018~ 14:4~ 18          North Ma~ To Corydon & Ed~
-    ##  6  2816088 Full Bus ~ 2018~ 21:5~ 11          Portage-~ Via St.Charles  
-    ##  7  2815984 Full Bus ~ 2018~ 15:3~ 11          Portage-~ To Polo Park    
-    ##  8  2815952 Full Bus ~ 2018~ 14:3~ 162         Ft. Rich~ To Downtown     
-    ##  9  2815812 Full Bus ~ 2018~ 21:2~ 11          Portage-~ Via Glenway     
-    ## 10  2815810 Full Bus ~ 2018~ 21:1~ 11          Portage-~ Via Rothesay    
-    ## # ... with 7,446 more rows, and 9 more variables: Latitude <chr>,
-    ## #   Longitude <chr>, year <fct>, month <fct>, day <fct>, bus_speed <chr>,
-    ## #   dayofweek <ord>, `fct_explicit_na(RouteNumber)` <fct>, freq <int>
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-4-3.png)<!-- -->
-
-``` r
 transitdata %>% 
   group_by(fct_explicit_na(RouteNumber)) %>%
   mutate(freq = n()) %>%
@@ -313,29 +227,7 @@ transitdata %>%
   print(transitdata) %>%
   ggplot(aes(fct_infreq(fct_explicit_na(RouteNumber)))) +
     geom_bar()
-```
 
-    ## # A tibble: 128 x 16
-    ## # Groups:   fct_explicit_na(RouteNumber) [14]
-    ##    PassUpID PassUpType Date  Clock RouteNumber RouteName RouteDestination
-    ##       <dbl> <fct>      <chr> <chr> <fct>       <fct>     <fct>           
-    ##  1  2815874 Full Bus ~ 2018~ 11:1~ 86          <NA>      Bridgewater     
-    ##  2  2815764 Full Bus ~ 2018~ 18:2~ 84          <NA>      Fort Rouge Stat~
-    ##  3  2815693 Full Bus ~ 2018~ 16:2~ 84          <NA>      Fort Rouge Stat~
-    ##  4  2815522 Full Bus ~ 2018~ 12:1~ 84          <NA>      Walmart & Kenas~
-    ##  5  2815476 Full Bus ~ 2018~ 10:4~ 84          <NA>      Walmart & Kenas~
-    ##  6  2804480 Full Bus ~ 2018~ 16:1~ 50          Archibald To Sage Creek   
-    ##  7  2803761 Full Bus ~ 2018~ 14:1~ 10          St.Bonif~ St.Boniface-Pro~
-    ##  8  2802791 Full Bus ~ 2018~ 11:0~ 74          Kenaston  University of M~
-    ##  9  2802360 Full Bus ~ 2018~ 15:4~ 68          Crescent  University of W~
-    ## 10  2801940 Full Bus ~ 2018~ 08:1~ 68          Crescent  University of W~
-    ## # ... with 118 more rows, and 9 more variables: Latitude <chr>,
-    ## #   Longitude <chr>, year <fct>, month <fct>, day <fct>, bus_speed <chr>,
-    ## #   dayofweek <ord>, `fct_explicit_na(RouteNumber)` <fct>, freq <int>
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-4-4.png)<!-- -->
-
-``` r
 transitdata %>% 
   group_by(fct_explicit_na(RouteNumber)) %>%
   mutate(freq = n()) %>%
@@ -346,26 +238,6 @@ transitdata %>%
   ggplot(aes(fct_infreq(RouteNumber))) +
     geom_bar()
 ```
-
-    ## # A tibble: 2,582 x 16
-    ## # Groups:   fct_explicit_na(RouteNumber) [7]
-    ##    PassUpID PassUpType Date  Clock RouteNumber RouteName RouteDestination
-    ##       <dbl> <fct>      <chr> <chr> <fct>       <fct>     <fct>           
-    ##  1  2814719 Full Bus ~ 2018~ 18:2~ 47          Transcona To Downtown     
-    ##  2  2814668 Full Bus ~ 2018~ 16:4~ 15          Sargent-~ Airport Via Wel~
-    ##  3  2814248 Full Bus ~ 2018~ 17:1~ 47          Transcona To Downtown     
-    ##  4  2814150 Full Bus ~ 2018~ 15:5~ 47          Transcona To Downtown     
-    ##  5  2814127 Full Bus ~ 2018~ 15:4~ 22          Assinibo~ To Westwood     
-    ##  6  2814043 Full Bus ~ 2018~ 14:5~ 14          St. Mary~ Via Dakota      
-    ##  7  2814042 Full Bus ~ 2018~ 14:5~ 47          Transcona To Downtown     
-    ##  8  2814029 Full Bus ~ 2018~ 14:4~ 55          St.Anne's Via Meadowood   
-    ##  9  2814021 Full Bus ~ 2018~ 14:4~ 55          St.Anne's Via Dakota      
-    ## 10  2813952 Full Bus ~ 2018~ 13:4~ 47          Transcona Via Regent      
-    ## # ... with 2,572 more rows, and 9 more variables: Latitude <chr>,
-    ## #   Longitude <chr>, year <fct>, month <fct>, day <fct>, bus_speed <chr>,
-    ## #   dayofweek <ord>, `fct_explicit_na(RouteNumber)` <fct>, freq <int>
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-4-5.png)<!-- -->
 
 ``` r
 transitdata %>%
@@ -376,81 +248,49 @@ ggplot(aes(fct_infreq(bus_speed), fill = bus_speed)) +
         axis.ticks.x=element_blank()) +
   xlab("Type of bus speed") +
   ylab("count of passups")
-```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-1.png)<!-- -->
-
-``` r
 # two categorical variables - dotmap by year
 transitdata %>%
 ggplot(aes(year, bus_speed)) +
   geom_count()
-```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-2.png)<!-- -->
-
-``` r
 # two categorical variables - heatmap by month
 transitdata %>% 
   count(month, bus_speed) %>%  
   ggplot(aes(month, bus_speed)) +
     geom_tile(aes(fill = n))
-```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-3.png)<!-- -->
-
-``` r
 #Finding out which busses are the culprits! 
 transitdata %>%
   filter(bus_speed == 'Regular') %>%
   ggplot(aes(fct_infreq(RouteNumber))) +
     geom_bar(na.rm = TRUE) +
     xlab("RouteNumber")
-```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-4.png)<!-- -->
-
-``` r
 transitdata %>%
   filter(bus_speed == 'Express') %>%
   ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +  
     geom_bar(na.rm = TRUE) +
     xlab("RouteNumber")
-```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-5.png)<!-- -->
-
-``` r
 transitdata %>%
   filter(bus_speed %in% c('SuperExpress')) %>%
   ggplot(aes(RouteNumber, fill = RouteNumber)) +
     geom_bar(na.rm = TRUE) +
     xlab("RouteNumber")
-```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-6.png)<!-- -->
-
-``` r
 transitdata %>%
   filter(bus_speed %in% c('RapidTransit')) %>%
   ggplot(aes(RouteNumber, fill = RouteNumber)) +
     geom_bar(na.rm = TRUE) +
     xlab("RouteNumber")
-```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-7.png)<!-- -->
-
-``` r
 transitdata %>%
-  filter(year == '2018') %>%
+  filter(year == '2019') %>%
   ggplot(aes(month)) +
     geom_bar() +
     xlab("Month for current year")
-```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-8.png)<!-- -->
-
-``` r
 transitdata %>%
   filter(bus_speed %in% c('RapidTransit')) %>%
   ggplot(aes(RouteNumber, fill = RouteNumber)) +
@@ -459,11 +299,7 @@ transitdata %>%
     theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
     xlab("RouteNumber")
-```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-9.png)<!-- -->
-
-``` r
 transitdata %>%
   filter(year %in% c('2017', '2018', '2019'), 
          RouteNumber %in% c('11'),
@@ -474,13 +310,9 @@ transitdata %>%
     theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
     xlab("Route Destination -- RouteNumber = 11")
-```
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-10.png)<!-- -->
-
-``` r
 # Possible Research Question:  Does a Route Number with multiple destinations(162,11,75) cause more passups than dedicated route busses(160)?
 
+# Another Research Question: Is there a difference between time to event for busses?
 
 transitdata %>% 
   group_by(RouteNumber) %>% 
@@ -492,17 +324,7 @@ transitdata %>%
     geom_bar() +
     facet_wrap(~ year) +
     xlab("RouteNumber")
-```
 
-    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
-    ## `forcats::fct_explicit_na`
-    
-    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
-    ## `forcats::fct_explicit_na`
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-11.png)<!-- -->
-
-``` r
 transitdata %>% 
   group_by(RouteNumber) %>% 
   mutate(freq = n()) %>% 
@@ -513,17 +335,7 @@ transitdata %>%
     geom_bar() +
     facet_wrap(~ year) +
     xlab("RouteNumber")
-```
 
-    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
-    ## `forcats::fct_explicit_na`
-    
-    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
-    ## `forcats::fct_explicit_na`
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-12.png)<!-- -->
-
-``` r
 transitdata %>% 
   group_by(RouteNumber) %>% 
   mutate(freq = n()) %>% 
@@ -536,13 +348,18 @@ transitdata %>%
     xlab("RouteNumber")
 ```
 
-    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
-    ## `forcats::fct_explicit_na`
-    
-    ## Warning: Factor `RouteNumber` contains implicit NA, consider using
-    ## `forcats::fct_explicit_na`
-
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/checking%20new%20variable%20i%20created-13.png)<!-- -->
+``` r
+transitdata %>%
+  filter(year %in% c('2017', '2018', '2019'), 
+         month %in% c('9'),
+         PassUpType == 'Full Bus Pass-Up') %>%
+  ggplot(aes(month, fill = month)) +
+    geom_bar() +
+    facet_wrap(~ year) +
+    theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+    xlab("September -- Year by Year")
+```
 
 ## Lessons Learned and Notes
 
@@ -562,34 +379,34 @@ ggplot(transitdata) +
   xlab("Type of bus that passed")
 ```
 
-> "It seems this produced an error that I am trying to fix, the error in
-> this case is that its outputting the total count of the variable under
-> Route Destination which is not useful at all. I will try to fix this.
-> 
-> The issue was that the variables were characters to which i have to
-> change to factors.
-> 
-> AAAAND… urgggg\! It seems like transforming the variables didnt work
-> either\!\!"
+"It seems this produced an error that I am trying to fix, the error in
+this case is that its outputting the total count of the variable under
+Route Destination which is not useful at all. I will try to fix this.
 
-> UPDATE: 07-21-2019: So I finally figured out why my GGPLOT geom bar is
-> continiously breaking – it took me a week or so to figure this out. It
-> is because GGPLOT *CANNOT* have spaces in the variables. Furthermore,
-> spaces between variables is not good coding practice anyways, so… City
-> of Winnipeg, do *NOT* put spaces in your variables.
+The issue was that the variables were characters to which i have to
+change to factors.
+
+AAAAND… urgggg\! It seems like transforming the variables didnt work
+either\!\!"
+
+UPDATE: 07-21-2019: So I finally figured out why my GGPLOT geom bar is
+continiously breaking – it took me a week or so to figure this out. It
+is because GGPLOT *CANNOT* have spaces in the variables. Furthermore,
+spaces between variables is not good coding practice anyways, so… City
+of Winnipeg, do *NOT* put spaces in your variables.
 
 ### Sorting categorical variables by descending order
 
 I struggled with this for the long time, trying to find a tidyverse way
 of coding of sorting categories by decending order.
 
-> I cannot seem to find a way to properly sort categorical variables but
-> ill definitely find out by next time\! There are way too many values
-> for these variables… Now a new problem to solve\!
+I cannot seem to find a way to properly sort categorical variables but
+ill definitely find out by next time\! There are way too many values for
+these variables… Now a new problem to solve\!
 
-> 08-22-2019: I learned something new\! forcats package is for all
-> categorical variables… in this case i learned how to sort categorical
-> variables by descending frequency.
+08-22-2019: I learned something new\! forcats package is for all
+categorical variables… in this case i learned how to sort categorical
+variables by descending frequency.
 
 ### Variables with a ton of categories
 
@@ -601,15 +418,61 @@ ggplot(transitdata) +
   geom_bar(aes(RouteDestination)) +
   coord_flip() +
   xlab("Where the bus went")
-```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
-
-``` r
 ggplot(transitdata) +
   geom_bar(aes(RouteName)) +
   coord_flip() +
   xlab("Name of the Route")
 ```
 
-![](RMD_Wpg_Transit_Analysis_files/figure-gfm/unnamed-chunk-6-2.png)<!-- -->
+### Learning how to use Reprex() and preparing my data for reprex using datapasta
+
+Today (10-22-2019) i learned something very valuable and one of the
+reasons i am currently really happy about this is because, when in doubt
+i can join the RStudio Community and ask for help in a very user
+friendly way for the helpers and not only that whats important is that i
+can do this on my own.
+
+I cannot stress enough how empowering this is for a person learning new
+code. Most of the help i usually go to are books, workshops, or even my
+school colleagues or teachers, and sometimes that is not enough for a
+particular context for *my* code. so to have an entire world community
+helping me, i can feel more confident with my coding\!
+
+the packages to download are as follows:
+
+``` r
+#install.packages(c("reprex", "datapasta"))
+
+#library(reprex) 
+#library(datapasta)
+```
+
+The first package (Reprex) by Jenny Bryan means “*Repr*oduceable
+*Ex*ample” and what it does is essentially the code you copy will be
+pasted - from the clipboard - in a markdown chunk along with the output
+results (including the errors - if any). This is so that it can be
+easily copied and pasted for the person helping you. The caveat is that
+the code has to be “self contained” and be able to run everything it
+needs to reproduce the error (or result). So this means you have to
+include all the library(…) code, loading the data (see next paragraph),
+along with the associated code you want to inspect.
+
+the second package (datapasta) by Miles McBain is the ability to very
+simply render your data so that it is *significantly easier* to copy and
+paste for your reprex. I had *TONS* of trouble doing this originally, it
+was very diffcult to render my data such that it is easily reproducible.
+But now thanks to datapasta it is easily done with several lines of
+code, see below for an example:
+
+``` r
+#TD <- head(transitdataclean)
+#tribble_paste(TD)
+```
+
+There are even more useful commands but i found this absolutely
+wonderful when trying to copy and paste my data for a reprex or even
+other applications\!
+
+here is Miles McBain’s github for datapasta:
+<https://github.com/MilesMcBain/datapasta#getting-data-into-source>

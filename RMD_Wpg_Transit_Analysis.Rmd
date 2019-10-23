@@ -14,7 +14,7 @@ The idea of this practice dataset is:
   4) i want to practice more on Tidyverse code and stop using BASE R coding  
 
 Here is my initial startup for all the packages and options im running.  
-```{r loading packages, include=TRUE, cache=FALSE, eval=FALSE}
+```{r loading packages, eval=FALSE}
 library(here) 
 library(tidyverse)
 library(stringr)
@@ -34,7 +34,7 @@ UPDATE: 08-24-2019: I had accidently deleted my data file somehow, and so I re-d
 
 Ref: <https://data.winnipeg.ca/Transit/Transit-Pass-ups/mer2-irmb>
 
-```{r loading data, include=FALSE}
+```{r loading data, eval=FALSE}
 transitdata <- read_csv(here::here("data", "Transit_Pass-ups.csv"))
 summary(transitdata)
 ```
@@ -47,7 +47,7 @@ UPDATE 07-31-2019:
 definitely by practice, cleaning and visualizing data is a circular process. 
 
 ### Renaming, and changing variables to factors
-```{r Mutating and renaming, include=TRUE}
+```{r Mutating and renaming, eval=FALSE}
 transitdataclean <- transitdata %>% 
   rename(RouteDestination = `Route Destination`) %>%
   rename(RouteName = `Route Name`) %>%
@@ -59,7 +59,7 @@ transitdataclean <- transitdata %>%
 
 ### Changed longitude and latitude
 For potential spatial analysis in the future
-```{r Separating variables!, include=TRUE}
+```{r Separating variables!, eval=FALSE}
 transitdataclean <- transitdataclean %>%
   separate(Location, into = c("Extra", "Lat1", "Long1"), sep = " ") %>%
   separate(Lat1, into = c("Extra1", "Latitude"), sep = 1) %>%
@@ -70,33 +70,31 @@ transitdataclean <- transitdataclean %>%
 ### splitting up time and date
 Here is where we clean the time variable - i want to lubridate the time variable first, then split up time and date
 
-```{r}
-transitdataclean <- transitdataclean %>%
-  separate(Time, into = c("Day", "Time"), sep = 11)  
+```{r eval=FALSE}
+#transitdataclean <- transitdataclean %>%
+#  separate(Time, into = c("Day", "Time"), sep = 11)  
 ```
 
-```{r}
-transitdataclean <- transitdataclean %>%
-  mutate(Day = mdy(Day), Hour = hour(Time))
+```{r eval=FALSE}
+#transitdataclean <- transitdataclean %>%
+#  mutate(Day = mdy(Day), Hour = hour(Time))
 ```
 
 
-
-```{r Mutating Time, include=TRUE}
-starttime <- as.numeric(hms::hms(00, 30, 05))
+```{r Mutating Time, eval=FALSE}
 transitdataclean <- transitdataclean %>%
   mutate(Time = mdy_hms(Time)) %>%
   separate(Time, into = c("Date", "Clock"), sep = " ")
 ```
 
-```{r}
-transitdataclean <- transitdataclean %>%
-  mutate(timetopassup = Clock - starttime)
+```{r eval=FALSE}
+#transitdataclean <- transitdataclean %>%
+#  mutate(timetopassup = Clock - starttime)
 ```
 
 
 Creating new variables for splitting up dates into months days and years
-```{r Changing Dates, include=TRUE}
+```{r Changing Dates, eval=FALSE}
 transitdataclean <- transitdataclean %>%
   mutate(year = year(Date), 
          month = month(Date), 
@@ -112,7 +110,7 @@ some possible solutions for categorical splitting:
 3) create a category for subgroup by region in winnipeg  
 4) create a category for what type of speed bus "super express, rapid transit, etc"
 
-```{r adding categories for bus speed, include=TRUE}
+```{r adding categories for bus speed, eval=FALSE}
 transitdataclean <- transitdataclean %>%
   mutate(bus_speed = ifelse(RouteNumber %in% c(137,160,161,162,163,170,180,181,183,185), 'RapidTransit',
                             ifelse(RouteNumber %in% c(101,102,109,110), 'Dart',
@@ -122,7 +120,7 @@ transitdataclean <- transitdataclean %>%
 ## number 4 check!
 ```
 
-```{r creating day of week variable}
+```{r creating day of week variable, eval=FALSE}
 transitdataclean <- transitdataclean %>%
   mutate(dayofweek = wday(Date, label = TRUE, abbr = FALSE))
 ## number 2 check!
@@ -136,8 +134,8 @@ It seems that I have cleaned everything I wish to clean, I have separated all th
 
 A ton of these visualizations are primarily hypothesis generating, but also for the most part for my own practice sake.
 
-```{r include=TRUE}
-ggplot(transitdata) +
+```{r year, include=TRUE, eval=TRUE}
+ggplot(transitdataclean) +
   geom_bar(aes(year, fill = year)) +
   xlab("Year")
 ```
@@ -148,21 +146,21 @@ questions derived from this analysis (either answerable or unanswerable via data
 1) what caused the increase in pass ups from 2014-2018?  
 2) is it possible to join another table for extra insights, if so, what would be the common id?
 
-```{r include=TRUE}
-ggplot(transitdata) +
+```{r month, include=TRUE, eval=TRUE}
+ggplot(transitdataclean) +
   geom_bar(aes(month, fill = month)) +
   xlab("Month")
 ```
 
 and this is clearly very interesting! most of the passups occur when -- you guessed it! school is starting!
 
-```{r include=TRUE}
-transitdata %>%
+```{r day, include=TRUE, eval=TRUE}
+transitdataclean %>%
   ggplot(aes(fct_infreq(day), fill = day)) +
     geom_bar() +
     xlab("Day")
 
-transitdata %>%
+transitdataclean %>%
   ggplot(aes(dayofweek, fill = dayofweek)) +
   geom_bar() +
   facet_wrap(~ month, nrow = 4) +
@@ -171,8 +169,8 @@ transitdata %>%
   xlab("Day of the Week")
 ```
 
-```{r}
-transitdata %>% 
+```{r ggplot practice, include=TRUE, eval=TRUE}
+transitdataclean %>% 
   group_by(fct_explicit_na(RouteNumber)) %>%
   mutate(freq = n()) %>%
   filter(PassUpType == 'Full Bus Pass-Up',
@@ -181,7 +179,7 @@ transitdata %>%
   ggplot(aes(freq)) +
     geom_histogram(binwidth = 9)
 
-transitdata %>% 
+transitdataclean %>% 
   group_by(fct_explicit_na(RouteNumber)) %>%
   mutate(freq = n()) %>%
   filter(freq > 2500, freq < 3750, 
@@ -191,7 +189,7 @@ transitdata %>%
   ggplot(aes(freq)) +
     geom_histogram(binwidth = 1)
 
-transitdata %>% 
+transitdataclean %>% 
   group_by(fct_explicit_na(RouteNumber)) %>%
   mutate(freq = n()) %>%
   filter(freq > 5000, 
@@ -201,7 +199,7 @@ transitdata %>%
   ggplot(aes(fct_infreq(fct_explicit_na(RouteNumber)))) +
     geom_bar()
 
-transitdata %>% 
+transitdataclean %>% 
   group_by(fct_explicit_na(RouteNumber)) %>%
   mutate(freq = n()) %>%
   filter(freq < 100, 
@@ -211,7 +209,7 @@ transitdata %>%
   ggplot(aes(fct_infreq(fct_explicit_na(RouteNumber)))) +
     geom_bar()
 
-transitdata %>% 
+transitdataclean %>% 
   group_by(fct_explicit_na(RouteNumber)) %>%
   mutate(freq = n()) %>%
   filter(freq > 2500, freq < 3750, 
@@ -222,8 +220,8 @@ transitdata %>%
     geom_bar()
 ```
 
-```{r checking new variable i created, include=TRUE}
-transitdata %>%
+```{r more ggplot practice, include=TRUE, eval=TRUE}
+transitdataclean %>%
 ggplot(aes(fct_infreq(bus_speed), fill = bus_speed)) +
   geom_bar() +
   facet_wrap(~ year, nrow = 4) +
@@ -233,48 +231,48 @@ ggplot(aes(fct_infreq(bus_speed), fill = bus_speed)) +
   ylab("count of passups")
 
 # two categorical variables - dotmap by year
-transitdata %>%
+transitdataclean %>%
 ggplot(aes(year, bus_speed)) +
   geom_count()
 
 # two categorical variables - heatmap by month
-transitdata %>% 
+transitdataclean %>% 
   count(month, bus_speed) %>%  
   ggplot(aes(month, bus_speed)) +
     geom_tile(aes(fill = n))
 
 #Finding out which busses are the culprits! 
-transitdata %>%
+transitdataclean %>%
   filter(bus_speed == 'Regular') %>%
   ggplot(aes(fct_infreq(RouteNumber))) +
     geom_bar(na.rm = TRUE) +
     xlab("RouteNumber")
 
-transitdata %>%
+transitdataclean %>%
   filter(bus_speed == 'Express') %>%
   ggplot(aes(fct_infreq(RouteNumber), fill = RouteNumber)) +  
     geom_bar(na.rm = TRUE) +
     xlab("RouteNumber")
 
-transitdata %>%
+transitdataclean %>%
   filter(bus_speed %in% c('SuperExpress')) %>%
   ggplot(aes(RouteNumber, fill = RouteNumber)) +
     geom_bar(na.rm = TRUE) +
     xlab("RouteNumber")
 
-transitdata %>%
+transitdataclean %>%
   filter(bus_speed %in% c('RapidTransit')) %>%
   ggplot(aes(RouteNumber, fill = RouteNumber)) +
     geom_bar(na.rm = TRUE) +
     xlab("RouteNumber")
 
-transitdata %>%
+transitdataclean %>%
   filter(year == '2019') %>%
   ggplot(aes(month)) +
     geom_bar() +
     xlab("Month for current year")
 
-transitdata %>%
+transitdataclean %>%
   filter(bus_speed %in% c('RapidTransit')) %>%
   ggplot(aes(RouteNumber, fill = RouteNumber)) +
     geom_bar() +
@@ -283,7 +281,7 @@ transitdata %>%
         axis.ticks.x=element_blank()) +
     xlab("RouteNumber")
 
-transitdata %>%
+transitdataclean %>%
   filter(year %in% c('2017', '2018', '2019'), 
          RouteNumber %in% c('11'),
          PassUpType == 'Full Bus Pass-Up') %>%
@@ -297,7 +295,7 @@ transitdata %>%
 
 # Another Research Question: Is there a difference between time to event for busses?
 
-transitdata %>% 
+transitdataclean %>% 
   group_by(RouteNumber) %>% 
   mutate(freq = n()) %>% 
   ungroup() %>% 
@@ -308,7 +306,7 @@ transitdata %>%
     facet_wrap(~ year) +
     xlab("RouteNumber")
 
-transitdata %>% 
+transitdataclean %>% 
   group_by(RouteNumber) %>% 
   mutate(freq = n()) %>% 
   ungroup() %>% 
@@ -319,7 +317,7 @@ transitdata %>%
     facet_wrap(~ year) +
     xlab("RouteNumber")
 
-transitdata %>% 
+transitdataclean %>% 
   group_by(RouteNumber) %>% 
   mutate(freq = n()) %>% 
   ungroup() %>% 
@@ -331,8 +329,8 @@ transitdata %>%
     xlab("RouteNumber")
 ```
 
-```{r}
-transitdata %>%
+```{r checking september data yoy, include=TRUE, eval=TRUE}
+transitdataclean %>%
   filter(year %in% c('2017', '2018', '2019'), 
          month %in% c('9'),
          PassUpType == 'Full Bus Pass-Up') %>%
@@ -356,7 +354,7 @@ This section will display all the errors, and difficulties I have struggled with
 
 If there is a space in the variable name, it will cause an error. I initially thought its because i did not change the variables into factors (which was also true) but it was not the cause of the error, since it did not fix it.
 
-```{r eval=FALSE}
+```{r}
 ggplot(transitdata) +
   geom_bar(aes("Pass-Up Type")) +
   xlab("Type of bus that passed")
@@ -382,7 +380,7 @@ I cannot seem to find a way to properly sort categorical variables but ill defin
 
 I am still currently having an issue on how to deal with variables with a ton of categories. I am trying to find a way to get top 10 results. 
 
-```{r include=TRUE}
+```{r}
 ggplot(transitdata) +
   geom_bar(aes(RouteDestination)) +
   coord_flip() +
@@ -402,7 +400,7 @@ I cannot stress enough how empowering this is for a person learning new code. Mo
 
 the packages to download are as follows:
 
-```{r Packages for reprex and datapasta, include=TRUE, cache=FALSE, eval=FALSE}
+```{r Packages for reprex and datapasta}
 #install.packages(c("reprex", "datapasta"))
 
 #library(reprex) 
@@ -413,7 +411,7 @@ The first package (Reprex) by Jenny Bryan means "*Repr*oduceable *Ex*ample" and 
 
 the second package (datapasta) by Miles McBain is the ability to very simply render your data so that it is *significantly easier* to copy and paste for your reprex.  I had *TONS* of trouble doing this originally, it was very diffcult to render my data such that it is easily reproducible. But now thanks to datapasta it is easily done with several lines of code, see below for an example:
 
-```{r Packages for reprex and datapasta, include=TRUE, cache=FALSE, eval=FALSE}
+```{r datapasta example}
 #TD <- head(transitdataclean)
 #tribble_paste(TD)
 ```
