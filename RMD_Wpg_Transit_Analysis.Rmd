@@ -18,7 +18,6 @@ Here is my initial startup for all the packages and options im running.
 library(here) 
 library(tidyverse)
 library(stringr)
-library(lubridate)
 library(knitr)
 library(reprex)
 library(datapasta)
@@ -70,6 +69,10 @@ transitdataclean <- transitdataclean %>%
 ### splitting up time and date
 Here is where we clean the time variable - i want to lubridate the time variable first, then split up time and date
 
+```{r hardcoding starttime}
+starttime <- hms::hms(00, 30, 05)
+```
+
 ```{r eval=FALSE}
 #transitdataclean <- transitdataclean %>%
 #  separate(Time, into = c("Day", "Time"), sep = 11)  
@@ -80,16 +83,17 @@ Here is where we clean the time variable - i want to lubridate the time variable
 #  mutate(Day = mdy(Day), Hour = hour(Time))
 ```
 
-
 ```{r Mutating Time, eval=FALSE}
 transitdataclean <- transitdataclean %>%
-  mutate(Time = mdy_hms(Time)) %>%
+  mutate(Time = lubridate::mdy_hms(Time)) %>%
   separate(Time, into = c("Date", "Clock"), sep = " ")
 ```
 
+
+
 ```{r eval=FALSE}
-#transitdataclean <- transitdataclean %>%
-#  mutate(timetopassup = Clock - starttime)
+transitdataclean <- transitdataclean %>%
+  mutate(timetopassup = as_hms(Clock) - as_hms(starttime))
 ```
 
 
@@ -135,8 +139,9 @@ It seems that I have cleaned everything I wish to clean, I have separated all th
 A ton of these visualizations are primarily hypothesis generating, but also for the most part for my own practice sake.
 
 ```{r year, include=TRUE, eval=TRUE}
-ggplot(transitdataclean) +
-  geom_bar(aes(year, fill = year)) +
+transitdataclean %>%
+ggplot(aes(year, fill = year)) +
+  geom_bar() +
   xlab("Year")
 ```
 
@@ -147,8 +152,9 @@ questions derived from this analysis (either answerable or unanswerable via data
 2) is it possible to join another table for extra insights, if so, what would be the common id?
 
 ```{r month, include=TRUE, eval=TRUE}
-ggplot(transitdataclean) +
-  geom_bar(aes(month, fill = month)) +
+transitdataclean %>%
+ggplot(aes(month, fill = month)) +
+  geom_bar() +
   xlab("Month")
 ```
 
@@ -420,4 +426,8 @@ There are even more useful commands but i found this absolutely wonderful when t
 here is Miles McBain's github for datapasta:
 <https://github.com/MilesMcBain/datapasta#getting-data-into-source>
 
+### lubridate and hms seem to be incompatible depending what you load first
 
+taken from github issues -- credit to vspinu
+
+*Naming conflicts are common in R's world. In case lubridate is loaded first, you either have to make an alias like lhms <- lubridate::hms or use explicit lubridate::hms in your code. Nothing to be done about this at the moment. hms in lubridate is a parser producing periods, in hms it's a constructor producing durations.*
