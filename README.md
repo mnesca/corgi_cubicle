@@ -7,6 +7,9 @@ I'm a beginner data scientist, i am using this repository to practice and get ti
 For now im sticking with Canadian open data sources:
   https://data.winnipeg.ca/  -- i am currently going to be doing analysis on transit data.
 
+UPDATE 10-23-2019:
+  - Learned a new very empowering way of requesting for help! reprex() and datapasta!  check out my new markdown (still meticulously working on it...)
+
 UPDATE 09-26-2019:
   - Hey all! School has started and I wanted to give an update, I slowed down with my Winnipeg Transit Analysis (although I do really miss it, I want to extract as much insight as possible!), however I will be picking up on doing textual analysis since this is what i am planning to do for my thesis. I am currently in the works for learning pdftools package with R then will be using tidytext by Julia Silge. I want to create some practice analysis on it because i have specific measures to conduct. I apologize for the inactivity, but i assure you work is being done behind the scenes! Stay tuned!
 
