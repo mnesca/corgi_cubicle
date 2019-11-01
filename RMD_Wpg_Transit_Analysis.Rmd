@@ -18,6 +18,7 @@ Here is my initial startup for all the packages and options im running.
 library(here) 
 library(tidyverse)
 library(stringr)
+library(hms)
 library(knitr)
 library(reprex)
 library(datapasta)
@@ -73,15 +74,6 @@ Here is where we clean the time variable - i want to lubridate the time variable
 starttime <- hms::hms(00, 30, 05)
 ```
 
-```{r eval=FALSE}
-#transitdataclean <- transitdataclean %>%
-#  separate(Time, into = c("Day", "Time"), sep = 11)  
-```
-
-```{r eval=FALSE}
-#transitdataclean <- transitdataclean %>%
-#  mutate(Day = mdy(Day), Hour = hour(Time))
-```
 
 ```{r Mutating Time, eval=FALSE}
 transitdataclean <- transitdataclean %>%
@@ -93,16 +85,22 @@ transitdataclean <- transitdataclean %>%
 
 ```{r eval=FALSE}
 transitdataclean <- transitdataclean %>%
-  mutate(timetopassup = as_hms(Clock) - as_hms(starttime))
+  mutate(timetopassup = as_hms(Clock) - as_hms(starttime)) %>%
+  mutate_at(vars("timetopassup"), as.numeric)
+```
+
+```{r}
+transitdataclean <- transitdataclean %>%
+  mutate(passuphms = hms::hms(timetopassup))
 ```
 
 
 Creating new variables for splitting up dates into months days and years
 ```{r Changing Dates, eval=FALSE}
 transitdataclean <- transitdataclean %>%
-  mutate(year = year(Date), 
-         month = month(Date), 
-         day = day(Date),
+  mutate(year = lubridate::year(Date), 
+         month = lubridate::month(Date), 
+         day = lubridate::day(Date),
          ) %>%
   mutate_at(vars("year", "month", "day"), as.factor) 
 ```
@@ -126,7 +124,7 @@ transitdataclean <- transitdataclean %>%
 
 ```{r creating day of week variable, eval=FALSE}
 transitdataclean <- transitdataclean %>%
-  mutate(dayofweek = wday(Date, label = TRUE, abbr = FALSE))
+  mutate(dayofweek = lubridate::wday(Date, label = TRUE, abbr = FALSE))
 ## number 2 check!
 ```
 
@@ -348,8 +346,29 @@ transitdataclean %>%
     xlab("September -- Year by Year")
 ```
 
+```{r}
+transitdataclean %>%
+  filter(year %in% c('2017', '2018', '2019'), 
+         RouteNumber %in% c('11', '162', '160', '75'),
+         PassUpType == 'Full Bus Pass-Up') %>%
+  ggplot(aes(RouteNumber, timetopassup, fill = RouteNumber)) +
+    geom_boxplot() +
+    theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+    xlab("Route Numbers")
+```
 
-
+```{r}
+transitdataclean %>%
+  filter(year %in% c('2018'), 
+         bus_speed %in% c('RapidTransit'),
+         PassUpType == 'Full Bus Pass-Up') %>%
+  ggplot(aes(RouteNumber, timetopassup, fill = RouteNumber)) +
+    geom_boxplot() +
+    theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+    xlab("Route Numbers")
+```
 
 
 ## Lessons Learned and Notes
