@@ -54,17 +54,8 @@ transitdataclean <- transitdata %>%
   rename(PassUpType = `Pass-Up Type`) %>%
   rename(RouteNumber = `Route Number`) %>%
   rename(PassUpID = `Pass-Up ID`) %>%
-  mutate_at(vars("RouteDestination", "RouteName", "PassUpType", "RouteNumber"), as.factor)
-```
-
-### Changed longitude and latitude
-For potential spatial analysis in the future
-```{r Separating variables!, eval=FALSE}
-transitdataclean <- transitdataclean %>%
-  separate(Location, into = c("Extra", "Lat1", "Long1"), sep = " ") %>%
-  separate(Lat1, into = c("Extra1", "Latitude"), sep = 1) %>%
-  separate(Long1, into = c("Longitude", "Extra2"), sep = -1) %>%
-  select(-Extra, -Extra1, -Extra2)
+  mutate_at(vars("RouteDestination", "RouteName", "PassUpType", "RouteNumber"), as.factor) %>%
+  count(fct_explicit_na(RouteNumber), fct_explicit_na(RouteDestination), sort = TRUE)
 ```
 
 ### splitting up time and date
@@ -78,12 +69,15 @@ starttime <- hms::hms(00, 30, 05)
 ```{r Mutating Time, eval=FALSE}
 transitdataclean <- transitdataclean %>%
   mutate(Time = lubridate::mdy_hms(Time)) %>%
-  separate(Time, into = c("Date", "Clock"), sep = " ")
+  separate(Time, into = c("Date", "Clock"), sep = " ") %>%
+  mutate(Clock_s = as_hms(Clock)) %>%
+  mutate_at(vars("Clock_s"), as.numeric)
 ```
 
+This next line of code is to subtract the time in which the bus passed up to the 'assumed' start time of 05:30 which is when busses get issued. As a result it counts the amount of seconds from 5:30am to when the bus passed up. The reason why i did this is because i want to see on average what time busses passup and which routes passup the most at certain times during the day.  
 
-
-```{r eval=FALSE}
+I of course expect rush hour but the data should see where this truly lies.
+```{r creating time to pass up eval=FALSE}
 transitdataclean <- transitdataclean %>%
   mutate(timetopassup = as_hms(Clock) - as_hms(starttime)) %>%
   mutate_at(vars("timetopassup"), as.numeric)
@@ -370,6 +364,17 @@ transitdataclean %>%
     xlab("Route Numbers")
 ```
 
+```{r}
+transitdataclean %>%
+  filter(year %in% c('2018'), 
+         RouteDestination %in% c('To University of Manitoba'),
+         PassUpType == 'Full Bus Pass-Up') %>%
+  ggplot(aes(RouteNumber, hms(Clock_s), fill = RouteNumber)) +
+    geom_boxplot() +
+    theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+    xlab("Route Numbers")
+```
 
 ## Lessons Learned and Notes
 
