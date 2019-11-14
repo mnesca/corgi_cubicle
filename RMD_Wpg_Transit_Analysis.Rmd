@@ -2,7 +2,9 @@
 title: "Playing Around with Winnipeg Transit Data"
 author: "Marcello Nesca"
 date: "July 2 2019"
-output: github_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ## Motivation(s) & Objectives
@@ -14,7 +16,8 @@ The idea of this practice dataset is:
   4) i want to practice more on Tidyverse code and stop using BASE R coding  
 
 Here is my initial startup for all the packages and options im running.  
-```{r loading packages, eval=FALSE}
+
+```{r loading packages}
 library(here) 
 library(tidyverse)
 library(stringr)
@@ -34,7 +37,7 @@ UPDATE: 08-24-2019: I had accidently deleted my data file somehow, and so I re-d
 
 Ref: <https://data.winnipeg.ca/Transit/Transit-Pass-ups/mer2-irmb>
 
-```{r loading data, eval=FALSE}
+```{r loading data}
 transitdata <- read_csv(here::here("data", "Transit_Pass-ups.csv"))
 summary(transitdata)
 ```
@@ -47,15 +50,15 @@ UPDATE 07-31-2019:
 definitely by practice, cleaning and visualizing data is a circular process. 
 
 ### Renaming, and changing variables to factors
-```{r Mutating and renaming, eval=FALSE}
+```{r Mutating and renaming}
 transitdataclean <- transitdata %>% 
   rename(RouteDestination = `Route Destination`) %>%
   rename(RouteName = `Route Name`) %>%
   rename(PassUpType = `Pass-Up Type`) %>%
   rename(RouteNumber = `Route Number`) %>%
   rename(PassUpID = `Pass-Up ID`) %>%
-  mutate_at(vars("RouteDestination", "RouteName", "PassUpType", "RouteNumber"), as.factor) %>%
-  count(fct_explicit_na(RouteNumber), fct_explicit_na(RouteDestination), sort = TRUE)
+  mutate_at(vars("RouteDestination", "RouteName", "PassUpType", "RouteNumber"), as.factor) # %>%
+  # count(fct_explicit_na(RouteNumber), fct_explicit_na(RouteDestination), sort = TRUE)
 ```
 
 ### splitting up time and date
@@ -66,7 +69,7 @@ starttime <- hms::hms(00, 30, 05)
 ```
 
 
-```{r Mutating Time, eval=FALSE}
+```{r Mutating Time}
 transitdataclean <- transitdataclean %>%
   mutate(Time = lubridate::mdy_hms(Time)) %>%
   separate(Time, into = c("Date", "Clock"), sep = " ") %>%
@@ -77,20 +80,21 @@ transitdataclean <- transitdataclean %>%
 This next line of code is to subtract the time in which the bus passed up to the 'assumed' start time of 05:30 which is when busses get issued. As a result it counts the amount of seconds from 5:30am to when the bus passed up. The reason why i did this is because i want to see on average what time busses passup and which routes passup the most at certain times during the day.  
 
 I of course expect rush hour but the data should see where this truly lies.
-```{r creating time to pass up eval=FALSE}
+```{r creating time to pass up}
 transitdataclean <- transitdataclean %>%
   mutate(timetopassup = as_hms(Clock) - as_hms(starttime)) %>%
   mutate_at(vars("timetopassup"), as.numeric)
 ```
 
 ```{r}
+library(tidyverse)
 transitdataclean <- transitdataclean %>%
   mutate(passuphms = hms::hms(timetopassup))
 ```
 
 
 Creating new variables for splitting up dates into months days and years
-```{r Changing Dates, eval=FALSE}
+```{r Changing Dates}
 transitdataclean <- transitdataclean %>%
   mutate(year = lubridate::year(Date), 
          month = lubridate::month(Date), 
@@ -106,7 +110,7 @@ some possible solutions for categorical splitting:
 3) create a category for subgroup by region in winnipeg  
 4) create a category for what type of speed bus "super express, rapid transit, etc"
 
-```{r adding categories for bus speed, eval=FALSE}
+```{r adding categories for bus speed}
 transitdataclean <- transitdataclean %>%
   mutate(bus_speed = ifelse(RouteNumber %in% c(137,160,161,162,163,170,180,181,183,185), 'RapidTransit',
                             ifelse(RouteNumber %in% c(101,102,109,110), 'Dart',
@@ -116,7 +120,7 @@ transitdataclean <- transitdataclean %>%
 ## number 4 check!
 ```
 
-```{r creating day of week variable, eval=FALSE}
+```{r creating day of week variable}
 transitdataclean <- transitdataclean %>%
   mutate(dayofweek = lubridate::wday(Date, label = TRUE, abbr = FALSE))
 ## number 2 check!
@@ -130,7 +134,8 @@ It seems that I have cleaned everything I wish to clean, I have separated all th
 
 A ton of these visualizations are primarily hypothesis generating, but also for the most part for my own practice sake.
 
-```{r year, include=TRUE, eval=TRUE}
+```{r year}
+library(tidyverse)
 transitdataclean %>%
 ggplot(aes(year, fill = year)) +
   geom_bar() +
@@ -143,7 +148,7 @@ questions derived from this analysis (either answerable or unanswerable via data
 1) what caused the increase in pass ups from 2014-2018?  
 2) is it possible to join another table for extra insights, if so, what would be the common id?
 
-```{r month, include=TRUE, eval=TRUE}
+```{r}
 transitdataclean %>%
 ggplot(aes(month, fill = month)) +
   geom_bar() +
@@ -152,7 +157,7 @@ ggplot(aes(month, fill = month)) +
 
 and this is clearly very interesting! most of the passups occur when -- you guessed it! school is starting!
 
-```{r day, include=TRUE, eval=TRUE}
+```{r day}
 transitdataclean %>%
   ggplot(aes(fct_infreq(day), fill = day)) +
     geom_bar() +
@@ -167,7 +172,7 @@ transitdataclean %>%
   xlab("Day of the Week")
 ```
 
-```{r ggplot practice, include=TRUE, eval=TRUE}
+```{r ggplot practice}
 transitdataclean %>% 
   group_by(fct_explicit_na(RouteNumber)) %>%
   mutate(freq = n()) %>%
@@ -218,7 +223,7 @@ transitdataclean %>%
     geom_bar()
 ```
 
-```{r more ggplot practice, include=TRUE, eval=TRUE}
+```{r more ggplot practice}
 transitdataclean %>%
 ggplot(aes(fct_infreq(bus_speed), fill = bus_speed)) +
   geom_bar() +
@@ -411,15 +416,15 @@ I cannot seem to find a way to properly sort categorical variables but ill defin
 I am still currently having an issue on how to deal with variables with a ton of categories. I am trying to find a way to get top 10 results. 
 
 ```{r}
-ggplot(transitdata) +
-  geom_bar(aes(RouteDestination)) +
-  coord_flip() +
-  xlab("Where the bus went")
+#ggplot(transitdata) +
+#  geom_bar(aes(RouteDestination)) +
+#  coord_flip() +
+# xlab("Where the bus went")
 
-ggplot(transitdata) +
-  geom_bar(aes(RouteName)) +
-  coord_flip() +
-  xlab("Name of the Route")
+#ggplot(transitdata) +
+#  geom_bar(aes(RouteName)) +
+#  coord_flip() +
+#  xlab("Name of the Route")
 ```
 
 ### Learning how to use Reprex() and preparing my data for reprex using datapasta
