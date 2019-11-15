@@ -2,9 +2,7 @@
 title: "Playing Around with Winnipeg Transit Data"
 author: "Marcello Nesca"
 date: "July 2 2019"
-output:
-  word_document: default
-  html_document: default
+output: github_document
 ---
 
 ## Motivation(s) & Objectives
