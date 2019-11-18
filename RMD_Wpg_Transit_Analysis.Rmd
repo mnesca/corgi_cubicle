@@ -55,7 +55,8 @@ transitdataclean <- transitdata %>%
   rename(PassUpType = `Pass-Up Type`) %>%
   rename(RouteNumber = `Route Number`) %>%
   rename(PassUpID = `Pass-Up ID`) %>%
-  mutate_at(vars("RouteDestination", "RouteName", "PassUpType", "RouteNumber"), as.factor) # %>%
+  mutate_at(vars("RouteDestination", "RouteName", "PassUpType", "RouteNumber"), as.factor) %>%
+  drop_na()
   # count(fct_explicit_na(RouteNumber), fct_explicit_na(RouteDestination), sort = TRUE)
 ```
 
@@ -87,7 +88,7 @@ transitdataclean <- transitdataclean %>%
 ```{r}
 library(tidyverse)
 transitdataclean <- transitdataclean %>%
-  mutate(passuphms = hms::hms(timetopassup))
+  mutate(timetopassuphms = hms::hms(timetopassup))
 ```
 
 
@@ -122,6 +123,29 @@ transitdataclean <- transitdataclean %>%
 transitdataclean <- transitdataclean %>%
   mutate(dayofweek = lubridate::wday(Date, label = TRUE, abbr = FALSE))
 ## number 2 check!
+```
+
+
+
+
+```{r coding the routecounts into transitdataclean}
+transitdataclean <- transitdataclean %>%
+  mutate(numdest = ifelse(RouteNumber %in% c(1,2,20,25,24,26,34,39,40,42,48,49,50,55,60,61,63,64,65,74,78,80,81,160,161,180,181,185), '1 Destination',
+                            ifelse(RouteNumber %in% c(3,12,29,31,32,36,38,41,43,45,46,57,58,67,70,79,163,170,183), '2 Destinations',
+                                   ifelse(RouteNumber %in% c(10,11,14,15,16,17,18,19,21,22,28,33,35,37,44,47,54,59,62,66,68,71,75,77,137,162), '3+ Destinations', 'No Passups' ))))
+```
+
+```{r}
+## need to recheck code
+
+
+#transitdataclean <- transitdataclean %>%
+#  mutate(newnumdest <- fct_collapse(transitdataclean$numdest,
+#  onedestination = c("1 Destination", "No Passups"),
+#  twodestinations = c("2 Destinations"),
+#  threeplusdestinations = c("3+ Destinations")
+#)) %>%
+#  select(-numdest)
 ```
 
 
@@ -172,46 +196,27 @@ transitdataclean %>%
 
 ```{r ggplot practice}
 transitdataclean %>% 
-  group_by(fct_explicit_na(RouteNumber)) %>%
-  mutate(freq = n()) %>%
-  filter(PassUpType == 'Full Bus Pass-Up',
-         year == '2018') %>%
-  print(transitdata) %>%
-  ggplot(aes(freq)) +
-    geom_histogram(binwidth = 9)
-
-transitdataclean %>% 
-  group_by(fct_explicit_na(RouteNumber)) %>%
-  mutate(freq = n()) %>%
-  filter(freq > 2500, freq < 3750, 
-         PassUpType == 'Full Bus Pass-Up',
-         year == '2018') %>%
-  print(transitdata) %>%
-  ggplot(aes(freq)) +
-    geom_histogram(binwidth = 1)
-
-transitdataclean %>% 
-  group_by(fct_explicit_na(RouteNumber)) %>%
+  group_by(RouteNumber) %>%
   mutate(freq = n()) %>%
   filter(freq > 5000, 
          PassUpType == 'Full Bus Pass-Up',
          year == '2018') %>%
   print(transitdata) %>%
-  ggplot(aes(fct_infreq(fct_explicit_na(RouteNumber)))) +
+  ggplot(aes(fct_infreq(RouteNumber))) +
     geom_bar()
 
 transitdataclean %>% 
-  group_by(fct_explicit_na(RouteNumber)) %>%
+  group_by(RouteNumber) %>%
   mutate(freq = n()) %>%
   filter(freq < 100, 
          PassUpType == 'Full Bus Pass-Up',
          year == '2018') %>%
   print(transitdata) %>%
-  ggplot(aes(fct_infreq(fct_explicit_na(RouteNumber)))) +
+  ggplot(aes(fct_infreq(RouteNumber))) +
     geom_bar()
 
 transitdataclean %>% 
-  group_by(fct_explicit_na(RouteNumber)) %>%
+  group_by(RouteNumber) %>%
   mutate(freq = n()) %>%
   filter(freq > 2500, freq < 3750, 
          PassUpType == 'Full Bus Pass-Up',
@@ -330,17 +335,102 @@ transitdataclean %>%
     xlab("RouteNumber")
 ```
 
+```{r checking new variables}
+transitdataclean %>%
+  filter(year %in% c('2016', '2017', '2018'),
+    numdest %in% c('1 Destination', '2 Destinations', '3+ Destinations'), 
+    PassUpType == 'Full Bus Pass-Up') %>%
+  ggplot(aes(numdest, fill = numdest)) +
+  geom_bar() +
+  xlab("Busses that travel to only 1 or more Destinations - 2016-2018")
+
+transitdataclean %>%
+  group_by(RouteNumber) %>% 
+  mutate(freq = n()) %>% 
+  ungroup() %>%
+  filter(year %in% c('2016', '2017', '2018'),
+         numdest %in% c('1 Destination'), 
+         PassUpType == 'Full Bus Pass-Up',
+         freq > 500) %>%
+  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+  geom_bar() +
+  xlab("1 Destination - RouteNumber - more than 500 passups total - 2016-2018")
+
+transitdataclean %>%
+  group_by(RouteNumber) %>% 
+  mutate(freq = n()) %>% 
+  ungroup() %>%
+  filter(year %in% c('2016', '2017', '2018'),
+         numdest %in% c('2 Destinations'), 
+         PassUpType == 'Full Bus Pass-Up',
+         freq > 500) %>%
+  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+  geom_bar() +
+  xlab("2 Destinations - RouteNumber - more than 500 passups total - 2016-2018")
+
+transitdataclean %>%
+  group_by(RouteNumber) %>% 
+  mutate(freq = n()) %>% 
+  ungroup() %>%
+  filter(year %in% c('2016', '2017', '2018'),
+         numdest %in% c('3+ Destinations'), 
+         PassUpType == 'Full Bus Pass-Up',
+         freq > 500) %>%
+  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+  geom_bar() +
+  xlab("3+ Destinations - RouteNumber - more than 500 passups total - 2016-2018")
+
+transitdataclean %>%
+  filter(year %in% c('2016', '2017', '2018'),
+         numdest %in% c('1 Destination'), 
+         PassUpType == 'Full Bus Pass-Up') %>%
+  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+  geom_bar() +
+  xlab("1 Destination - RouteNumbers - 2016-2018")
+
+transitdataclean %>%
+  filter(year %in% c('2016', '2017', '2018'),
+         numdest %in% c('2 Destinations'), 
+         PassUpType == 'Full Bus Pass-Up') %>%
+  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+  geom_bar() +
+  xlab("2 Destinations - RouteNumbers - 2016-2018")
+
+transitdataclean %>%
+  filter(year %in% c('2016', '2017', '2018'),
+         numdest %in% c('3+ Destinations'), 
+         PassUpType == 'Full Bus Pass-Up') %>%
+  ggplot(aes(RouteNumber, fill = RouteNumber)) +
+  geom_bar() +
+  xlab("3 or more destinations - RouteNumber - 2016-2018")
+```
+
+```{r coding multiple bus destinations vs single routes}
+routedestinations <- transitdataclean %>%
+  filter(numdest %in% c('2 Destinations'), 
+         PassUpType == 'Full Bus Pass-Up') %>%
+  count(RouteNumber, RouteDestination) %>%
+  group_by(RouteNumber) %>%
+  mutate(count = sum(n)) %>%
+  ungroup()
+
+## need to know how to count grouped by factors and record them
+```
+
+
+
+
 ```{r checking september data yoy, include=TRUE, eval=TRUE}
 transitdataclean %>%
-  filter(year %in% c('2017', '2018', '2019'), 
-         month %in% c('9'),
+  filter(year %in% c('2013','2014','2015','2016','2017', '2018', '2019'), 
+         RouteNumber %in% c('11'),
          PassUpType == 'Full Bus Pass-Up') %>%
-  ggplot(aes(month, fill = month)) +
+  ggplot(aes(RouteNumber, fill = RouteNumber)) +
     geom_bar() +
     facet_wrap(~ year) +
     theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
-    xlab("September -- Year by Year")
+    xlab("11 -- Year by Year")
 ```
 
 ```{r}
