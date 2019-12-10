@@ -32,3 +32,28 @@ transitdataclean <- transitdataclean %>%
   separate(Long1, into = c("Longitude", "Extra2"), sep = -1) %>%
   select(-Extra, -Extra1, -Extra2)
 ```
+
+## checking normality
++ checking normality assumption with inclusion filters
+```{r fig.width = 8.5, fig.height = 5}
+ANOVATransit %>%
+  ggplot(aes(hms(timetopassup))) +
+    geom_histogram() +
+    xlab("distribution of passups") +
+    ylab("Boxplot of hours to passup")
+```
+
+## Inferential Analysis - Question 1..cont..
+* Is time to pass-up statistically significant between major bus routes to UofM between 2016-2018 for Full Bus Pass-ups? (less time is worse!)
+  + checking equal variances
+```{r}
+leveneTest(timetopassup ~ RouteNumber, data = ANOVATransit)
+```
+
+## Inferential Analysis - Question 1..cont..
+* Is time to pass-up statistically significant between major bus routes to UofM between 2016-2018 for Full Bus Pass-ups? (less time is worse!)
+```{r}
+resultQ1 <- aov(timetopassup ~ RouteNumber, data = ANOVATransit)
+summary(resultQ1)
+TukeyHSD(resultQ1)
+```
