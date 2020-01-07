@@ -7,6 +7,9 @@ I'm a beginner data scientist, i am using this repository to practice and get ti
 For now im sticking with Canadian open data sources:
   https://data.winnipeg.ca/  -- i am currently going to be doing analysis on transit data.
 
+UPDATE 01-07-2020:
+  - Happy New Years all! Some news, my first dataset I played around with was the Winnipeg Transit Pass-up data, which serendipitously ended up me giving a brief presentation to Winnipeg Transit on Dec 17th 2019! It was a fun experience and I got to learn more about Winnipeg Transit.  I will close out on that project (for the time being) and work on another insightful project!
+
 UPDATE 10-23-2019:
   - Learned a new very empowering way of requesting for help! reprex() and datapasta!  check out my new markdown (still meticulously working on it...)
 
